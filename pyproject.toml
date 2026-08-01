@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Talk to a product manager, get a reviewed Linear project, then let Foreman turn it into issues."
 requires-python = ">=3.11"
 license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
   "claude-agent-sdk>=0.1.0",
   # Foreman master as of the merge of #2, which is the first commit carrying
