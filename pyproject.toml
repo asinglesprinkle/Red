@@ -6,11 +6,12 @@ requires-python = ">=3.11"
 license = "MIT"
 dependencies = [
   "claude-agent-sdk>=0.1.0",
-  # Pinned to the commit that added foreman.review, which is the seam Red is
-  # built on. Nothing in Foreman is exported from __init__ and it makes no
-  # stability promise, so an unpinned dependency here would be a dependency on
-  # whatever happened to be pushed. Repin when the review port lands on master.
-  "foreman @ git+https://github.com/cmichaelsd/Foreman@b23d5998f0c42a49d48b1e803512858f69920851",
+  # Foreman master as of the merge of #2, which is the first commit carrying
+  # foreman.review, the seam Red is built on. Pinned to a SHA rather than to
+  # master: nothing in Foreman is exported from __init__ and it makes no
+  # stability promise, so tracking a branch would make Red depend on whatever
+  # happened to be pushed. Bump this deliberately.
+  "foreman @ git+https://github.com/cmichaelsd/Foreman@f352eb2ea4563decf4f6b3dbbd84f93f0661e4e0",
 ]
 
 [project.optional-dependencies]
