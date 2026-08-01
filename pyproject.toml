@@ -1,0 +1,34 @@
+[project]
+name = "red"
+version = "0.1.0"
+description = "Talk to a product manager, get a reviewed Linear project, then let Foreman turn it into issues."
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+  "claude-agent-sdk>=0.1.0",
+  # Pinned to the commit that added foreman.review, which is the seam Red is
+  # built on. Nothing in Foreman is exported from __init__ and it makes no
+  # stability promise, so an unpinned dependency here would be a dependency on
+  # whatever happened to be pushed. Repin when the review port lands on master.
+  "foreman @ git+https://github.com/cmichaelsd/Foreman@b23d5998f0c42a49d48b1e803512858f69920851",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+red = "red.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/red"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
