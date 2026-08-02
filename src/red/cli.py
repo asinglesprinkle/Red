@@ -38,6 +38,20 @@ from .pipeline import Deps, run_pull, select_project
 from .relay import RelayReviewer
 from .state import RED_DIR, StateStore
 
+# Imported for its import side effect, not for anything it exports: this is what
+# makes `input()` use GNU readline instead of the terminal driver's canonical
+# mode. Without it the kernel handles backspace, and it cannot move the cursor
+# back up a row, so editing a line that has wrapped stops dead at the start of
+# the current visual row. Red asks for a paragraph at that prompt, so its input
+# wraps as a matter of course. Readline also brings arrow keys, ^A/^E/^W/^U, and
+# recall of what you typed at an earlier prompt in the same run.
+#
+# Do not "clean up" this import. Not available on every build, hence the guard.
+try:  # pragma: no cover - presence is a property of the interpreter build
+    import readline  # noqa: F401
+except ImportError:  # pragma: no cover
+    pass
+
 
 # -- shared plumbing ----------------------------------------------------------
 
