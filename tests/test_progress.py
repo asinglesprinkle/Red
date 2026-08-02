@@ -8,6 +8,8 @@ what this prints.
 from __future__ import annotations
 
 import io
+import re
+import time
 
 from forman.spawn import Activity
 
@@ -100,3 +102,80 @@ def test_nothing_reaches_stdout():
     progress(Activity(kind="thinking"))
 
     assert out.getvalue()  # it went to the stream it was given, not print()
+
+
+# -- the ticking clock --------------------------------------------------------
+#
+# The event lines alone were not enough: forty seconds of thinking is one event
+# and then nothing, which looks exactly like the freeze it is not.
+
+
+def test_the_clock_redraws_itself_while_nothing_happens():
+    """The whole point: no activity at all, and the number still moves."""
+    out = io.StringIO()
+    clock = FakeClock()
+    progress = Progress(stream=out, clock=clock, tick=True)
+    progress.start("drafting")
+    try:
+        for _ in range(40):  # ~4s of real time at most; the ticker runs at 1s
+            clock.now += 1
+            time.sleep(0.1)
+            if len(_clock_readings(out.getvalue())) >= 2:
+                break
+    finally:
+        progress.done()
+
+    readings = _clock_readings(out.getvalue())
+    assert len(readings) >= 2, f"clock did not redraw: {out.getvalue()!r}"
+    assert readings != [readings[0]] * len(readings), "clock redrew but never moved"
+
+
+def _clock_readings(drawn: str) -> list[str]:
+    """Every elapsed time the ticker painted, in order."""
+    return re.findall(r"\d+:\d\d", drawn.split("abort)")[-1])
+
+
+def test_the_live_line_is_erased_when_the_run_ends():
+    out = io.StringIO()
+    progress = Progress(stream=out, clock=FakeClock(), tick=True)
+    progress.start("drafting")
+    progress.done()
+
+    # Whatever was drawn, the last thing written returns the cursor and blanks
+    # the line, so the next print does not land on top of a stale clock.
+    assert out.getvalue().endswith("\r") or out.getvalue().endswith("\n")
+
+
+def test_a_prompt_stops_the_clock_from_writing_over_it():
+    out = io.StringIO()
+    progress = Progress(stream=out, clock=FakeClock(), tick=True)
+    progress.start("drafting")
+    progress.pause()
+    drawn_at_pause = out.getvalue()
+
+    time.sleep(0.3)  # the ticker, had it survived, would have drawn by now
+    assert out.getvalue() == drawn_at_pause
+
+    progress.done()
+
+
+def test_activity_after_a_pause_starts_the_clock_again():
+    out = io.StringIO()
+    progress = Progress(stream=out, clock=FakeClock(), tick=True)
+    progress.start("drafting")
+    progress.pause()
+    progress(Activity(kind="tool", tool="Read", tool_input={"file_path": "a.py"}))
+    try:
+        assert "read a.py" in out.getvalue()
+    finally:
+        progress.done()
+
+
+def test_ticking_is_off_by_default_so_a_pipe_gets_no_control_characters():
+    out = io.StringIO()
+    progress = Progress(stream=out, clock=FakeClock())
+    progress.start("drafting")
+    time.sleep(0.3)
+    progress.done()
+
+    assert out.getvalue() == "drafting... (ctrl-c to abort)\n"

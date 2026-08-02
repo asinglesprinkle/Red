@@ -7,14 +7,14 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
   "claude-agent-sdk>=0.1.0",
-  # Forman master as of on_activity, which is what lets `red push` show that
-  # the brief agent is reading the repository rather than hanging. Two commits
-  # back is the merge of #2, which first carried forman.review (then spelled
+  # Forman master as of on_activity reaching push_interactive, which is what
+  # lets both halves of Red show that an agent is working rather than hung.
+  # Further back is the merge of #2, which first carried forman.review (spelled
   # foreman.review), the seam Red is built on. Pinned to a SHA rather than to
   # master: nothing in Forman is exported from __init__ and it makes no
   # stability promise, so tracking a branch would make Red depend on whatever
   # happened to be pushed. Bump this deliberately.
-  "forman @ git+https://github.com/cmichaelsd/Forman@e4f3d2e9b7873264772d24431e8f4f55dd2c8b6f",
+  "forman @ git+https://github.com/cmichaelsd/Forman@71b5605e00fec09417c22a3b59041a350f651a78",
 ]
 
 [project.optional-dependencies]

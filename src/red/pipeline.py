@@ -48,6 +48,7 @@ class PushPort(Protocol):
         reviewer: Any,
         edit: Callable[[str], str] | None,
         cwd: str,
+        on_activity: Callable[[Any], None] | None = ...,
     ) -> list[Any]: ...
 
 
@@ -71,6 +72,12 @@ class Deps:
     edit: Callable[[str], str] | None = None
     cwd: str = "."
     now: Callable[[], str] = iso_now
+    # Optional, and injected like everything else here. A slice heading with a
+    # silent terminal under it is the shape this loop had before: `started` says
+    # the agent is running, `finished` takes the live line back down.
+    started: Callable[[str], None] | None = None
+    finished: Callable[[], None] | None = None
+    on_activity: Callable[[Any], None] | None = None
 
 
 @dataclass
@@ -161,12 +168,15 @@ def run_pull(deps: Deps, project: Project) -> PullReport:
 
         reviewer = deps.reviewer_for(item=item, position=position)
         try:
+            if deps.started:
+                deps.started(f"drafting tickets for {item.title!r}")
             tickets = deps.push(
                 prose=opening_for(brief, item),
                 linear=deps.linear,
                 reviewer=reviewer,
                 edit=deps.edit,
                 cwd=deps.cwd,
+                on_activity=deps.on_activity,
             )
         except Aborted:
             record.status = ItemStatus.SKIPPED.value
@@ -180,6 +190,11 @@ def run_pull(deps: Deps, project: Project) -> PullReport:
                 stopped = True
                 break
             continue
+        finally:
+            # Whatever happened, the live line comes down before anything else
+            # is printed. `continue` and `break` run this too.
+            if deps.finished:
+                deps.finished()
 
         record.issues = [t.identifier for t in tickets]
         record.status = ItemStatus.CREATED.value

@@ -216,13 +216,14 @@ def scoped_for(linear, projects, project):
 def _pushing_once():
     """forman.push_interactive with a fresh scripted conversation per slice."""
 
-    def push(*, prose, linear, reviewer, edit=None, cwd="."):
+    def push(*, prose, linear, reviewer, edit=None, cwd=".", on_activity=None):
         return push_interactive(
             prose=prose,
             linear=linear,
             reviewer=reviewer,
             edit=edit,
             cwd=cwd,
+            on_activity=on_activity,
             conversation=ScriptedConversation(["Which endpoints?", TICKETS]),
         )
 
