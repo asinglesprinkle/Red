@@ -19,6 +19,7 @@ from typing import Callable
 
 from forman.spawn import (
     DEFAULT_MODEL,
+    READ_ONLY_TOOLS as FORMAN_READ_ONLY_TOOLS,
     Activity,
     AgentRun,
     extract_last_json,
@@ -33,7 +34,10 @@ BRIEF_MAX_TURNS = 24
 
 MAX_QUESTION_ROUNDS = 3
 
-READ_ONLY_TOOLS = ["Read", "Grep", "Glob"]
+# Forman's, not a copy: this list is what its session lockdown actually applies
+# as the base toolset, so a second definition here could drift into naming tools
+# a session does not really get, or worse, quietly widen one.
+READ_ONLY_TOOLS = FORMAN_READ_ONLY_TOOLS
 
 _PROJECT_JSON_SHAPE = """\
 Emit as your final message a single JSON object and nothing else:

@@ -7,17 +7,21 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
   "claude-agent-sdk>=0.1.0",
-  # Forman master as of forman.progress, which Red imports directly: the live
-  # display and the type-ahead guard live there now, shared by both CLIs
-  # rather than duplicated into this one. Earlier commits carry on_activity
-  # through run_conversation and push_interactive, which is what lets both
-  # halves of Red show that an agent is working rather than hung.
+  # Forman master as of the session lockdown: agents are held to the toolset
+  # their contract names and cut off from inherited MCP servers. Red depends on
+  # that directly - its brief, redraft and relay agents are all read-only, and
+  # before this they were handed Bash and whatever MCP config the machine had,
+  # which meant a drafting agent could reach Linear without passing the gate.
+  # Earlier commits carry forman.progress (the live display and the type-ahead
+  # guard, shared by both CLIs) and on_activity through run_conversation and
+  # push_interactive, which is what lets both halves of Red show that an agent
+  # is working rather than hung.
   # Further back is the merge of #2, which first carried forman.review (spelled
   # foreman.review), the seam Red is built on. Pinned to a SHA rather than to
   # master: nothing in Forman is exported from __init__ and it makes no
   # stability promise, so tracking a branch would make Red depend on whatever
   # happened to be pushed. Bump this deliberately.
-  "forman @ git+https://github.com/cmichaelsd/Forman@19b677f6dd100cc1e84852e2dd8f6f91a50a58f2",
+  "forman @ git+https://github.com/cmichaelsd/Forman@980b450008e145609808eee6587d6a49e39b62a3",
 ]
 
 [project.optional-dependencies]

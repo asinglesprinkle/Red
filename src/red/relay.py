@@ -24,7 +24,7 @@ from __future__ import annotations
 from typing import Callable
 
 from forman.review import Approval, Decision, Question, parse_decision
-from forman.spawn import DEFAULT_MODEL, run_agent
+from forman.spawn import DEFAULT_MODEL, READ_ONLY_TOOLS, run_agent
 
 from .models import ScopeItem, Project
 
@@ -84,7 +84,7 @@ def draft_answer(
             prompt=_prompt(brief, item, question),
             system_prompt=ANSWER_CONTRACT.format(nothing_found=NOTHING_FOUND),
             cwd=cwd,
-            allowed_tools=["Read", "Grep", "Glob"],
+            allowed_tools=READ_ONLY_TOOLS,
             max_turns=DRAFT_MAX_TURNS,
             model=model,
         )
