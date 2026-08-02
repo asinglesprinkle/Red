@@ -1,6 +1,6 @@
 """The whole loop, offline: prose to a project to issues, with a human in it.
 
-Everything here runs against Foreman's real `push_interactive` and Red's real
+Everything here runs against Forman's real `push_interactive` and Red's real
 `RelayReviewer`. The only fakes are the model and Linear. That is deliberate:
 the relay's whole reason to exist is the seam between those two real things, and
 a test that fakes the seam proves nothing about it.
@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import json
 
-from foreman.linear_client import StubLinearClient
-from foreman.push import push_interactive
+from forman.linear_client import StubLinearClient
+from forman.push import push_interactive
 
 from red.brief import draft_project, render_draft
 from red.linear_projects import ProjectScopedLinear, StubProjectClient, brief_of
@@ -55,7 +55,7 @@ class Reviewing:
         return self.answers.pop(0)
 
     def decide(self, approval):
-        from foreman.review import parse_decision
+        from forman.review import parse_decision
 
         return parse_decision(self.answers.pop(0))
 
@@ -84,7 +84,7 @@ def test_prose_becomes_a_project_and_then_issues(tmp_path):
 
     human = ScriptedHuman(
         [
-            "",  # accept the drafted answer to foreman's question
+            "",  # accept the drafted answer to forman's question
             "c",  # create the drafted issues
             "no, only the write endpoints",  # override on the second slice
             "c",
@@ -133,7 +133,7 @@ def test_prose_becomes_a_project_and_then_issues(tmp_path):
     assert projects.find(project.name).status == status_before == "Planned"
 
 
-def test_the_words_the_human_typed_are_the_words_foreman_received(tmp_path):
+def test_the_words_the_human_typed_are_the_words_forman_received(tmp_path):
     """The one promise the whole design rests on."""
     projects = StubProjectClient(path=tmp_path / "projects.json")
     linear = StubLinearClient(path=tmp_path / "issues.json")
@@ -158,14 +158,14 @@ def test_the_words_the_human_typed_are_the_words_foreman_received(tmp_path):
         conversation=conversation,
     )
 
-    # Foreman's second turn is the reply it was handed. It is the human's
+    # Forman's second turn is the reply it was handed. It is the human's
     # sentence, not Red's proposal, and Red's proposal appears nowhere in it.
     reply = conversation.openings[0] if len(conversation.openings) > 1 else None
     assert relay.sent == ["no, only the write endpoints"]
     assert relay.proposed == ["Everything in src/api."]
     assert reply is None or "Everything in src/api." not in reply
 
-    # And the human saw the question exactly as Foreman asked it.
+    # And the human saw the question exactly as Forman asked it.
     assert "Which endpoints?" in human.shown
 
 
@@ -214,7 +214,7 @@ def scoped_for(linear, projects, project):
 
 
 def _pushing_once():
-    """foreman.push_interactive with a fresh scripted conversation per slice."""
+    """forman.push_interactive with a fresh scripted conversation per slice."""
 
     def push(*, prose, linear, reviewer, edit=None, cwd="."):
         return push_interactive(

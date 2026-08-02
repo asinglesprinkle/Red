@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from foreman.review import Approval, Decision, Question
+from forman.review import Approval, Decision, Question
 
 from red.brief import (
     BriefError,
@@ -75,7 +75,7 @@ def test_the_agent_is_cut_off_after_three_rounds_and_drafts_anyway():
 
 def test_a_failed_session_is_an_error_and_not_an_empty_project():
     def failing(**_kwargs):
-        from foreman.spawn import AgentRun
+        from forman.spawn import AgentRun
 
         return AgentRun(text="", error="session died")
 

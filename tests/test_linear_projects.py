@@ -6,8 +6,8 @@ import json
 
 import pytest
 
-from foreman.linear_graphql import GraphQLLinearClient, LinearApiError
-from foreman.models import Ticket
+from forman.linear_graphql import GraphQLLinearClient, LinearApiError
+from forman.models import Ticket
 
 from red.brief import render_content
 from red.linear_projects import (

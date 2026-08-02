@@ -3,18 +3,18 @@
 # Red
 
 Talk it through with a product manager, get a Linear project you approved, then
-let Foreman turn it into tickets.
+let Forman turn it into tickets.
 
 ---
 
 Red is a local, single-user tool that sits one level above
-[Foreman](https://github.com/cmichaelsd/Foreman). Foreman closes the loop between
+[Forman](https://github.com/cmichaelsd/Forman). Forman closes the loop between
 a ticket and a pull request; Red closes the one between an idea and the tickets.
 You describe what you want in plain language; it drafts a Linear project. You
 review that project in Linear and move it on. Later Red walks it a slice at a
-time and hands each slice to Foreman to become tickets.
+time and hands each slice to Forman to become tickets.
 
-Red never answers on your behalf. When Foreman's agent has a question, that
+Red never answers on your behalf. When Forman's agent has a question, that
 question reaches your terminal exactly as it was asked. Every run ends at a
 human, twice over.
 
@@ -26,29 +26,29 @@ gaps, then shows you the draft. Nothing is filed until you say so. The project
 lands in **Backlog**.
 
 **Review.** You read it in Linear and edit it there. The scope section is the
-part that matters: each slice becomes one handover to Foreman. Move the project
+part that matters: each slice becomes one handover to Forman. Move the project
 to **Planned** when you want Red to start on it.
 
 **Pull.** `red pull` reads the project back out of Linear, so whatever you edited
-wins. It walks the slices blockers-first and runs Foreman's push on each one.
+wins. It walks the slices blockers-first and runs Forman's push on each one.
 Every question and every set of drafts comes to you. At the end it comments on
 the project saying what it filed, and stops.
 
-Linear only ever sees projects and the issues Foreman creates. Red never moves a
+Linear only ever sees projects and the issues Forman creates. Red never moves a
 project: Backlog to Planned is you saying you have read it, and anything after
 that is yours too.
 
 ```
 you <-> red push          -> Linear project (Backlog)
         [you review and edit it in Linear, move it to Planned]
-you <-> red pull -> foreman push -> Linear issues, in that project
-        [then, unchanged: foreman pull -> a pull request]
+you <-> red pull -> forman push -> Linear issues, in that project
+        [then, unchanged: forman pull -> a pull request]
 ```
 
 ## Install
 
 Needs Python 3.11+, git, and the [Claude Code CLI](https://claude.com/claude-code)
-on your PATH. Foreman is pulled in as a dependency; you do not need to install it
+on your PATH. Forman is pulled in as a dependency; you do not need to install it
 separately.
 
 ```sh
@@ -57,21 +57,21 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
 ```
 
-Red has no configuration of its own, on purpose. It reads Foreman's, so if
-`foreman` already works here, so does `red`. If it does not:
+Red has no configuration of its own, on purpose. It reads Forman's, so if
+`forman` already works here, so does `red`. If it does not:
 
 ```sh
-foreman init
+forman init
 ```
 
 That asks for a personal API key, checks it against the API before saving
-anything, and writes `~/.config/foreman/.env` with mode `0600`. One key serves
+anything, and writes `~/.config/forman/.env` with mode `0600`. One key serves
 both tools, because the key belongs to *you* and not to a tool.
 
 ## Quick start
 
 Run it from **inside the repo the project is about**. Red reads that repo to
-ground what it drafts, the same way Foreman does, and never writes to it beyond
+ground what it drafts, the same way Forman does, and never writes to it beyond
 `.red/`.
 
 ```sh
@@ -127,7 +127,7 @@ checkable success criteria, the independently shippable slices, what is out of
 scope, the ordering between slices, and the constraints. The agent reads your
 repo to answer what it can and asks only about the rest.
 
-Each slice is handed to a fresh Foreman session that has never seen this
+Each slice is handed to a fresh Forman session that has never seen this
 conversation, and the tickets it writes are executed by agents that have never
 seen it either. Nobody downstream can come back and ask. That is why this step is
 a conversation.
@@ -135,16 +135,16 @@ a conversation.
 `e` opens the draft in `$EDITOR`; anything else you type is feedback and
 redrafts.
 
-### Answering Foreman
+### Answering Forman
 
-During a pull, every question Foreman raises is printed exactly as it was asked.
+During a pull, every question Forman raises is printed exactly as it was asked.
 Red proposes a reply drawn from the project brief, labelled as its own, and
 waits:
 
 ```
 === slice 1 of 3: Add a token bucket (1/3) ===
 
--- foreman asks (Rate limiting, slice 1 of 3) --
+-- forman asks (Rate limiting, slice 1 of 3) --
 
 Which endpoints should the limit apply to, and what is the limit?
 
@@ -155,14 +155,14 @@ red > Everything under src/api, 100 requests a minute, per API key.
 [enter] to send that, or type your own:
 ```
 
-Press enter and Red's sentence goes to Foreman. Type anything and yours does
+Press enter and Red's sentence goes to Forman. Type anything and yours does
 instead. `--verbatim` removes the proposal entirely and leaves a byte-for-byte
 pipe.
 
 At the gate, Red proposes nothing:
 
 ```
--- foreman drafted 2 issue(s) for Rate limiting --
+-- forman drafted 2 issue(s) for Rate limiting --
 
 [c]reate 2 issue(s), [e]dit, [s]kip this slice, or type feedback to redraft:
 ```
@@ -179,7 +179,7 @@ with the rest.
    over anything Red remembers.
 3. Reconciles that against `.red/<slug>/state.json`, matching slices on their
    title rather than their position.
-4. Orders the slices blockers-first and hands each pending one to Foreman's push,
+4. Orders the slices blockers-first and hands each pending one to Forman's push,
    with the project brief in front of it so a fresh session can stand on its own.
 5. Records what was filed after **every** slice, so an interrupted run never
    loses one that really happened.
@@ -192,10 +192,10 @@ or asking for it by hand.
 
 ## Configuration
 
-None of its own. Red calls Foreman's settings loader, so the same environment
+None of its own. Red calls Forman's settings loader, so the same environment
 variables, the same `.env` in the target repo, and the same
-`~/.config/foreman/.env` apply, with the same precedence. See
-[Foreman's configuration table](https://github.com/cmichaelsd/Foreman#configuration).
+`~/.config/forman/.env` apply, with the same precedence. See
+[Forman's configuration table](https://github.com/cmichaelsd/Forman#configuration).
 
 Red keeps its bookkeeping in `.red/` inside the target repo and adds that to
 `.git/info/exclude`, so it cannot be committed by accident. This is tooling's
@@ -206,11 +206,11 @@ business, not a change to your tracked files.
 | the project | Linear, in its `content` field | so you can edit it, and your edit wins |
 | what has been filed | `.red/<slug>/state.json` | so re-running never files a slice twice |
 | a readable summary | `.red/<slug>/manifest.md` | rendered on every write, never parsed back |
-| your API key | `~/.config/foreman/.env` | it is yours, and it is Foreman's already |
+| your API key | `~/.config/forman/.env` | it is yours, and it is Forman's already |
 
 ## Design decisions
 
-- **Red is a pipe, not a proxy.** It could answer most of Foreman's questions
+- **Red is a pipe, not a proxy.** It could answer most of Forman's questions
   correctly most of the time. That is exactly the problem: you cannot correct a
   plausible answer you never saw. So every question surfaces, and the only thing
   Red adds is a first draft you can accept with one keystroke.
@@ -223,7 +223,7 @@ business, not a change to your tracked files.
   renumbers everything below it. Matching on position would file the wrong slice
   twice. A retitled slice therefore looks new, and Red says so rather than
   assuming.
-- **Issues are attached to their project by id.** Foreman attaches by name,
+- **Issues are attached to their project by id.** Forman attaches by name,
   taking the first case-insensitive match out of the first hundred projects. Red
   holds the real id, so it uses it.
 - **Nothing here can move a project's status.** There is no mutation in the
@@ -246,11 +246,11 @@ mileage.
   id, which is the last part of the project URL.
 - Every proposed answer costs one extra agent call. `--verbatim` is there for
   when you would rather just answer.
-- It does not drive `foreman pull`. Foreman's execution phase has no human seam
+- It does not drive `forman pull`. Forman's execution phase has no human seam
   by design: blockers surface asynchronously in `state.json`, `manifest.md` and
-  Linear comments, and `foreman resume` is you saying you have dealt with one. Run
-  `foreman pull` yourself.
-- Foreman is pinned to a commit in `pyproject.toml`. It exports nothing from
+  Linear comments, and `forman resume` is you saying you have dealt with one. Run
+  `forman pull` yourself.
+- Forman is pinned to a commit in `pyproject.toml`. It exports nothing from
   `__init__` and promises no API stability, so an unpinned dependency would be a
   dependency on whatever happened to be pushed. Bumping it is a deliberate act.
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from foreman.models import Ticket
+from forman.models import Ticket
 
 from red.models import ItemStatus, ScopeItem
 from red.pipeline import Deps, opening_for, order_scope, run_pull, summary_comment
@@ -80,7 +80,7 @@ def test_every_slice_is_handed_over_once_and_the_issues_come_back():
     assert report.remaining == 0
 
 
-def test_the_brief_and_the_slice_both_reach_foreman():
+def test_the_brief_and_the_slice_both_reach_forman():
     push = ScriptedPush()
     run_pull(make_deps(push), project(slices=1))
 
@@ -182,7 +182,7 @@ def test_quitting_a_slice_skips_it_and_creates_nothing_for_it():
         """Says no to the first slice, yes to the second."""
 
         def __call__(self, *, prose, linear, reviewer, edit=None, cwd=".", **_kw):
-            from foreman.push import Aborted
+            from forman.push import Aborted
 
             self.calls.append({"prose": prose, "cwd": cwd, "script": {}})
             if len(self.calls) == 1:
@@ -199,7 +199,7 @@ def test_quitting_a_slice_skips_it_and_creates_nothing_for_it():
 def test_saying_no_to_carrying_on_stops_the_run():
     class AlwaysQuits(ScriptedPush):
         def __call__(self, **_kwargs):
-            from foreman.push import Aborted
+            from forman.push import Aborted
 
             self.calls.append({})
             raise Aborted("nothing created")
@@ -219,7 +219,7 @@ def test_the_last_slice_never_asks_whether_to_carry_on():
 
     class AlwaysQuits(ScriptedPush):
         def __call__(self, **_kwargs):
-            from foreman.push import Aborted
+            from forman.push import Aborted
 
             raise Aborted("nothing created")
 
@@ -255,7 +255,7 @@ def test_a_stopped_run_picks_up_where_it_left_off(tmp_path):
 
     class QuitsOnce(ScriptedPush):
         def __call__(self, *, prose, linear, reviewer, edit=None, cwd=".", **kw):
-            from foreman.push import Aborted
+            from forman.push import Aborted
 
             self.calls.append({"prose": prose})
             raise Aborted("nothing created")

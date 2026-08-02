@@ -1,18 +1,18 @@
-# Red: the product manager in front of Foreman
+# Red: the product manager in front of Forman
 
 Build spec. Written before any code existed, kept for provenance. Read the
 README for how the shipped tool actually behaves; where the two disagree, the
-README is right. Foreman keeps its own original spec here for the same reason.
+README is right. Forman keeps its own original spec here for the same reason.
 
 Built since, and not in this document: `red status`, a `ProjectReviewer` for the
-push gate (Foreman's counts tickets, and there are none yet at that point), a
+push gate (Forman's counts tickets, and there are none yet at that point), a
 `conftest.py` that makes the suite fail rather than start a real agent session,
 and a title-based reconciliation so editing a project in Linear between runs
 does not misfile a slice.
 
 ## Context
 
-Foreman (`/home/cole/Projects/Foreman`, `github.com/cmichaelsd/Foreman`) closes
+Forman (`/home/cole/Projects/Forman`, `github.com/cmichaelsd/Forman`) closes
 the loop from a Linear **issue** to a pull request. It stops at a human twice:
 once before tickets are filed (`push_interactive`), once at PR-open
 (`run_once`). Its whole design is that nothing crosses a boundary unseen.
@@ -20,41 +20,41 @@ once before tickets are filed (`push_interactive`), once at PR-open
 What is missing is the layer above. Today a human has to arrive already knowing
 what the issues are. Red is that layer: you talk to it the way you would talk to
 a product manager, it drafts a Linear **Project**, you review the Project in
-Linear, and later Red walks that Project's scope and drives Foreman's push once
+Linear, and later Red walks that Project's scope and drives Forman's push once
 per slice to produce the issues.
 
 The point is not automation, it is **transparency**. Red is a pipe. When
-Foreman's push agent asks a question, that question reaches you. Red may propose
+Forman's push agent asks a question, that question reaches you. Red may propose
 an answer drawn from the Project brief, but nothing is sent on your behalf
 without you seeing it and pressing a key. This is deliberate: real tickets are
 never self-explanatory, and a Red that silently answered would be the one
 component in the chain with no gate, which is exactly the asymmetry
 `push_interactive` was written to close (`push.py:353-357`).
 
-Result: two projects, one philosophy. Red bubbles Foreman's human reviews up to
+Result: two projects, one philosophy. Red bubbles Forman's human reviews up to
 you instead of absorbing them.
 
 ```
 you <-> red push          -> Linear Project (Backlog)
         [you review + edit the Project in Linear, move it to Planned]
-you <-> red pull -> foreman.push_interactive -> Linear Issues (in the Project)
-        [later, unchanged: foreman pull -> PR]
+you <-> red pull -> forman.push_interactive -> Linear Issues (in the Project)
+        [later, unchanged: forman pull -> PR]
 ```
 
 Decisions taken up front, so they are not re-litigated later:
 
-- Red is a terminal CLI, mirroring Foreman's shape.
-- Red relays every Foreman question to the human, with a drafted answer the
+- Red is a terminal CLI, mirroring Forman's shape.
+- Red relays every Forman question to the human, with a drafted answer the
   human must accept or override. Never an unattended answer.
-- Red imports Foreman as a library at a pinned SHA, and Foreman gains a small
+- Red imports Forman as a library at a pinned SHA, and Forman gains a small
   additive typed review port so the relay is not built on prompt-string matching.
 - v1 covers both halves: chat to Project, and Project to Issues.
 
 ---
 
-## Part 1: a small additive change to Foreman
+## Part 1: a small additive change to Forman
 
-Red cannot use the `foreman` CLI, which binds `input`/`print` at
+Red cannot use the `forman` CLI, which binds `input`/`print` at
 `cli.py:226-233`. It must import `push_interactive`. That already accepts
 injected `ask`/`show` callables, but the two things a human is asked are
 distinguished only by their prompt literals: `"> "` (`push.py:373`) versus
@@ -62,7 +62,7 @@ distinguished only by their prompt literals: `"> "` (`push.py:373`) versus
 (`push.py:392`). Red would have to string-match those. Since both repos have the
 same owner, make the boundary honest instead.
 
-### New file: `Foreman/src/foreman/review.py`
+### New file: `Forman/src/forman/review.py`
 
 ```python
 """The human gate in the push phase, as a port.
@@ -103,7 +103,7 @@ class TerminalReviewer:
                  show: Callable[[str], None] = print) -> None: ...
 ```
 
-### Change: `Foreman/src/foreman/push.py`
+### Change: `Forman/src/forman/push.py`
 
 - `push_interactive` gains `reviewer: Reviewer | None = None`.
 - When `reviewer is None`, build `TerminalReviewer(ask=ask, show=show)` from the
@@ -117,20 +117,20 @@ class TerminalReviewer:
   The `[c]/[e]/[q]/feedback` parsing moves verbatim into
   `TerminalReviewer.decide`, so terminal behaviour is byte-identical.
 
-### Change: `Foreman/src/foreman/cli.py`
+### Change: `Forman/src/forman/cli.py`
 
 `cmd_push` passes `reviewer=TerminalReviewer(ask=input, show=print)`. Keep
 `edit=_edit_in_editor` as a separate parameter; it is already `str -> str` and
 needs no port.
 
-### Pinning test: `Foreman/tests/test_review_port.py`
+### Pinning test: `Forman/tests/test_review_port.py`
 
 - legacy `ask`/`show` path produces the same transcript as before (back-compat),
 - a `Reviewer` that returns `Decision("quit")` raises `Aborted` and creates
   nothing,
 - `Decision("feedback", "...")` redrafts without creating.
 
-Nothing else in Foreman changes. `orchestrator.py`, `spawn.py`, `decompose.py`
+Nothing else in Forman changes. `orchestrator.py`, `spawn.py`, `decompose.py`
 and their LOCKED docstrings are untouched.
 
 ---
@@ -139,13 +139,13 @@ and their LOCKED docstrings are untouched.
 
 ### Shape
 
-Python 3.11+, src-layout, hatchling, `red = red.cli:main`. Matches Foreman's
-conventions exactly, because half of Red is Foreman's own code:
+Python 3.11+, src-layout, hatchling, `red = red.cli:main`. Matches Forman's
+conventions exactly, because half of Red is Forman's own code:
 `from __future__ import annotations` everywhere, PEP-604 unions, `@dataclass`
 for data and `Protocol` for every boundary, keyword-only args on anything that
 might grow, injected-dependency-with-default as the universal seam, prose
 docstrings that explain *why*, **no em dashes in any generated file or output**
-(`Foreman/docs/build-spec.md:82-83`).
+(`Forman/docs/build-spec.md:82-83`).
 
 ```toml
 [project]
@@ -153,16 +153,16 @@ name = "red"
 requires-python = ">=3.11"
 dependencies = [
   "claude-agent-sdk>=0.1.0",
-  "foreman @ git+https://github.com/cmichaelsd/Foreman@<pin-a-sha>",
+  "forman @ git+https://github.com/cmichaelsd/Forman@<pin-a-sha>",
 ]
 ```
 
-Pin a SHA. Foreman exports nothing from `__init__.py` and makes no API
+Pin a SHA. Forman exports nothing from `__init__.py` and makes no API
 stability promise.
 
 **Red has no configuration of its own, on purpose.** It calls
-`foreman.config.load_settings()` and `Settings.require_api_key()`. `foreman init`
-and `~/.config/foreman/.env` serve both tools. Credentials belong to you, not to
+`forman.config.load_settings()` and `Settings.require_api_key()`. `forman init`
+and `~/.config/forman/.env` serve both tools. Credentials belong to you, not to
 a tool.
 
 ### Modules
@@ -179,18 +179,18 @@ a tool.
 | `red/cli.py` | argparse, all terminal I/O, `$EDITOR`, exit codes |
 
 Reuse rather than rewrite:
-`foreman.spawn.run_agent` / `run_conversation` / `extract_last_json`,
-`foreman.topo.topo_sort`, `foreman.config.load_settings`,
-`foreman.git_ops.repo_root` / `ensure_ignored`, `foreman.models.Ticket`,
-`foreman.linear_graphql.GraphQLLinearClient` (its `.query()` is the transport),
-and `foreman.cli._edit_in_editor`'s shape for `$EDITOR` round-trips.
+`forman.spawn.run_agent` / `run_conversation` / `extract_last_json`,
+`forman.topo.topo_sort`, `forman.config.load_settings`,
+`forman.git_ops.repo_root` / `ensure_ignored`, `forman.models.Ticket`,
+`forman.linear_graphql.GraphQLLinearClient` (its `.query()` is the transport),
+and `forman.cli._edit_in_editor`'s shape for `$EDITOR` round-trips.
 
 ### `red push [prose]`
 
-Mirrors `foreman push` turn for turn.
+Mirrors `forman push` turn for turn.
 
 1. Prose from argv, else stdin, else an `input("> ")` prompt
-   (`Foreman/src/foreman/cli.py:214-218`).
+   (`Forman/src/forman/cli.py:214-218`).
 2. `run_conversation(system_prompt=RED_CONVERSATION_CONTRACT, ...)` with a
    `respond` callback shaped exactly like `push.py:364-373`: prose means the
    agent still has questions, a final JSON object means it is ready.
@@ -199,7 +199,7 @@ Mirrors `foreman push` turn for turn.
 3. The contract asks for the six things a Project needs before it can be sliced:
    the outcome and who it is for; project-level success criteria; the
    independently shippable slices; explicit non-goals; ordering between slices;
-   constraints (repo, stack, dates). Same house rule as Foreman: prefer reading
+   constraints (repo, stack, dates). Same house rule as Forman: prefer reading
    the repository over asking, ask only for real gaps, ask all at once.
 4. Final JSON `{"project": {name, summary, outcome, success_criteria[],
    constraints, out_of_scope, scope_items: [{title, depends_on[], prose}]}}`.
@@ -237,7 +237,7 @@ fresh, so your edits always win.
 ### 1. Title of the first slice
 depends_on: []
 
-Prose handed to Foreman verbatim.
+Prose handed to Forman verbatim.
 
 <!-- red:scope -->
 ### 2. Title of the second slice
@@ -259,13 +259,13 @@ right for their work to survive.
    `(priority, updatedAt)`, taking the first. Mirrors
    `orchestrator.select_ticket`'s posture - an explicit argument bypasses all
    readiness checks.
-2. `ensure_ignored(repo)` for `.red/`, reusing `foreman.git_ops.ensure_ignored`
+2. `ensure_ignored(repo)` for `.red/`, reusing `forman.git_ops.ensure_ignored`
    (it writes `.git/info/exclude`, not `.gitignore`).
 3. Load or init `.red/<slugId>/state.json`: the project id and name, and one
    record per scope item (`pending | created | skipped`, plus the issue
    identifiers it produced). Re-running is resumable and never re-files an item
    already marked `created`.
-4. `topo_sort` the items on `depends_on` (`foreman.topo`).
+4. `topo_sort` the items on `depends_on` (`forman.topo`).
 5. For each pending item, in order:
    - prose = the brief + this item's prose. One `push_interactive` call.
    - `linear=ProjectScopedLinear(...)`, `reviewer=RelayReviewer(...)`,
@@ -275,7 +275,7 @@ right for their work to survive.
      back.
    - record identifiers, save state after every item.
 6. Wire cross-item ordering with `GraphQLLinearClient.relate_blocks(blocker,
-   blocked)` (`linear_graphql.py`, already public). Foreman's own `blocked_by`
+   blocked)` (`linear_graphql.py`, already public). Forman's own `blocked_by`
    uses 1-based indices **within a single push call**, so it cannot express
    ordering across slices. Red owns that and does it after each item completes.
 7. Post one summary comment on the project via `commentCreate(projectId=...)`
@@ -291,9 +291,9 @@ The heart of the thing.
 
 ```python
 class RelayReviewer:
-    """Foreman asks; you answer. Red only ever hands you a first draft.
+    """Forman asks; you answer. Red only ever hands you a first draft.
 
-    Every question Foreman raises reaches the terminal verbatim. Red proposes an
+    Every question Forman raises reaches the terminal verbatim. Red proposes an
     answer from the project brief because you should not have to re-read the
     brief in another window, but the proposal is labelled, and nothing is sent
     until you accept it. Red drafts answers to questions. Red never drafts the
@@ -302,7 +302,7 @@ class RelayReviewer:
 ```
 
 `answer(question)`:
-1. `show` a header naming where you are: `-- foreman asks (project "X", scope 3/7) --`
+1. `show` a header naming where you are: `-- forman asks (project "X", scope 3/7) --`
 2. `show(question.text)` **verbatim, unedited**
 3. one `run_agent` call (`allowed_tools=["Read","Grep","Glob"]`, low
    `max_turns`) with a contract that says: answer only from this brief and this
@@ -313,7 +313,7 @@ class RelayReviewer:
    replaces
 
 `decide(approval)`: `show(approval.rendered)` verbatim, then the same
-`[c]reate/[e]dit/[q]uit/feedback` prompt Foreman's own terminal uses, mapped to
+`[c]reate/[e]dit/[q]uit/feedback` prompt Forman's own terminal uses, mapped to
 a `Decision`. No proposal.
 
 `--verbatim` on `red pull` skips step 3 entirely and degrades to a byte-for-byte
@@ -333,7 +333,7 @@ GraphQL through the wrapped client's `.query()`, one module-local
 
 ```python
 class ProjectScopedLinear:
-    """A LinearClient that files everything Foreman creates into one project."""
+    """A LinearClient that files everything Forman creates into one project."""
     def create(self, ticket: Ticket) -> Ticket:
         ticket.project = self.project.name          # so drafts render it
         made = self.inner.create(ticket)
@@ -341,7 +341,7 @@ class ProjectScopedLinear:
         return made
 ```
 
-The explicit `issueUpdate` matters. Foreman attaches by **name**, taking the
+The explicit `issueUpdate` matters. Forman attaches by **name**, taking the
 first case-insensitive match out of `projects(first: 100)`
 (`linear_graphql.py:485-489`). Two similarly named projects and issues land in
 the wrong one silently. Red holds the real project id, so it uses it.
@@ -352,33 +352,33 @@ the wrong one silently. Red holds the real project id, so it uses it.
 
 ### Out of scope for v1
 
-Red does not drive `foreman.orchestrator.run_once`. Foreman's pull phase has no
+Red does not drive `forman.orchestrator.run_once`. Forman's pull phase has no
 human seam by design (`orchestrator.py:3-5`); its blockers surface
 asynchronously through `state.json`, `manifest.md` and Linear comments, and
-`foreman resume` is the human answering. You run `foreman pull` yourself. When
+`forman resume` is the human answering. You run `forman pull` yourself. When
 that changes, the seam is the `spawn` port on `Deps` (`orchestrator.py:87-97`),
-which is a plain dataclass with no defaults - Red can wrap it without Foreman
+which is a plain dataclass with no defaults - Red can wrap it without Forman
 changing again.
 
 ---
 
 ## Files
 
-**Foreman** - `src/foreman/review.py` (new), `src/foreman/push.py` (edit),
-`src/foreman/cli.py` (edit), `tests/test_review_port.py` (new).
+**Forman** - `src/forman/review.py` (new), `src/forman/push.py` (edit),
+`src/forman/cli.py` (edit), `tests/test_review_port.py` (new).
 
 **Red** - `pyproject.toml`, `README.md`, `.gitignore`, `src/red/{__init__,
 models,brief,scope,linear_projects,relay,state,pipeline,cli}.py`, `tests/`.
 
 ## Tests
 
-Mirror Foreman exactly: pytest, `pythonpath = ["src"]`, no `conftest.py`, no
+Mirror Forman exactly: pytest, `pythonpath = ["src"]`, no `conftest.py`, no
 `unittest.mock`, hand-written fakes only, frozen clock.
 
 - `FakeTransport` replaying canned project GraphQL, copied in shape from
-  `Foreman/tests/test_linear_graphql.py:24`.
+  `Forman/tests/test_linear_graphql.py:24`.
 - `ScriptedConversation` for the Red brief conversation, from
-  `Foreman/tests/test_push_interactive.py:44`.
+  `Forman/tests/test_push_interactive.py:44`.
 - Round-trip: `render_project(p)` then `parse_project(text)` is `p`, including a
   hand-mangled edit with wrong scope numbering.
 - **The relay's pinning test**: a `RelayReviewer` wired to a scripted human that
@@ -392,7 +392,7 @@ Mirror Foreman exactly: pytest, `pythonpath = ["src"]`, no `conftest.py`, no
 
 ## Verification
 
-1. `cd Foreman && .venv/bin/pytest` - green before and after the review port.
+1. `cd Forman && .venv/bin/pytest` - green before and after the review port.
    That suite is the back-compat proof.
 2. `cd Red && pytest`.
 3. Offline end to end: `red push --linear stub "..."` then `red pull --linear
@@ -401,10 +401,10 @@ Mirror Foreman exactly: pytest, `pythonpath = ["src"]`, no `conftest.py`, no
 4. Real, against `ENG`: `red push` on a small real want. Confirm the Project
    lands in **Backlog** with readable content, edit the scope in Linear, move it
    to **Planned**.
-5. `red pull` in a real repo. Confirm as it runs: every Foreman question appears
+5. `red pull` in a real repo. Confirm as it runs: every Forman question appears
    verbatim, each proposal is labelled `red > `, typing over one sends yours,
    and `[q]uit` at an approval creates nothing.
 6. In Linear: issues exist, all attached to the Project, cross-slice blocking
    relations present, one summary comment on the Project, project status
    **still Planned**.
-7. `foreman pull` on one of those issues, unchanged, all the way to a PR.
+7. `forman pull` on one of those issues, unchanged, all the way to a PR.

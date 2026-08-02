@@ -3,7 +3,7 @@
 LOCKED: Red never changes a project's status. Moving a project from Backlog to
 Planned is a human saying they have read it. Moving it on from there is a human
 saying the work is happening. Neither is something code gets to assert. Red
-files issues, comments what it filed, and stops. Same rule as Foreman's
+files issues, comments what it filed, and stops. Same rule as Forman's
 orchestrator, one level up.
 
 This module performs no I/O of its own. Every external effect goes through a
@@ -16,14 +16,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable, Protocol
 
-from foreman.topo import CycleError, topo_sort
+from forman.topo import CycleError, topo_sort
 
 from .models import ItemState, ItemStatus, Project, ProjectState, ScopeItem, iso_now
 from .state import reconcile
 
 # What a human sees at the top of each slice, and what the ticket agent is told
 # before the slice itself. The brief is repeated per slice because each
-# `foreman push` is a fresh session that has never seen this project.
+# `forman push` is a fresh session that has never seen this project.
 _OPENING = """\
 This is one slice of a larger project. Here is the project it belongs to, so you \
 can ground the ticket in it. File tickets ONLY for the slice, not for the rest \
@@ -38,7 +38,7 @@ of the project.
 
 
 class PushPort(Protocol):
-    """Foreman's push_interactive, or something shaped like it."""
+    """Forman's push_interactive, or something shaped like it."""
 
     def __call__(
         self,
@@ -52,7 +52,7 @@ class PushPort(Protocol):
 
 
 class ReviewerFactory(Protocol):
-    """Builds the Reviewer that stands between Foreman and the human."""
+    """Builds the Reviewer that stands between Forman and the human."""
 
     def __call__(self, *, item: ScopeItem, position: str) -> Any: ...
 
@@ -90,7 +90,7 @@ class PullReport:
 def select_project(projects: list[Project]) -> Project | None:
     """Pick which ready project to work.
 
-    Deliberately dumber than Foreman's ticket selection. A project is a big
+    Deliberately dumber than Forman's ticket selection. A project is a big
     thing to start by accident, so when there is more than one candidate the
     caller is expected to ask rather than guess. This only settles the
     unambiguous case.
@@ -126,8 +126,8 @@ def opening_for(brief: str, item: ScopeItem) -> str:
 
 
 def run_pull(deps: Deps, project: Project) -> PullReport:
-    """Walk a project's scope, handing each pending slice to Foreman."""
-    from foreman.push import Aborted
+    """Walk a project's scope, handing each pending slice to Forman."""
+    from forman.push import Aborted
 
     from .linear_projects import brief_of
 
@@ -224,7 +224,7 @@ def _link(
 ) -> None:
     """Record cross-slice ordering in Linear.
 
-    Foreman's own `blocked_by` uses 1-based indices within a single push call,
+    Forman's own `blocked_by` uses 1-based indices within a single push call,
     so it cannot say anything about a slice filed in a different call. Red owns
     that half. Every issue from a blocking slice blocks every issue from this
     one, which is coarse but true: the whole slice had to happen first.

@@ -1,4 +1,4 @@
-"""Hand-written stand-ins. No mocking library, the way Foreman's suite does it.
+"""Hand-written stand-ins. No mocking library, the way Forman's suite does it.
 
 A fake only has to return one of Red's dataclasses. None of them impersonates
 Linear, git, or an SDK.
@@ -9,9 +9,9 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from foreman.models import Ticket
-from foreman.review import Approval, Decision, Question
-from foreman.spawn import AgentRun
+from forman.models import Ticket
+from forman.review import Approval, Decision, Question
+from forman.spawn import AgentRun
 
 from red.models import Project, ScopeItem
 
@@ -68,7 +68,7 @@ class FakeTransport:
         names = []
         for query, _variables in self.calls:
             for token in query.split():
-                if token.startswith("Red") or token.startswith("Foreman"):
+                if token.startswith("Red") or token.startswith("Forman"):
                     names.append(token.split("(")[0].split("{")[0])
                     break
         return names
@@ -116,7 +116,7 @@ class ScriptedHuman:
 
 
 class ScriptedPush:
-    """Stands in for foreman.push_interactive.
+    """Stands in for forman.push_interactive.
 
     Drives the reviewer exactly the way the real one does: it asks whatever
     questions it was given, then presents drafts at the gate, then honours the
@@ -135,7 +135,7 @@ class ScriptedPush:
         self._next = 100
 
     def __call__(self, *, prose, linear, reviewer, edit=None, cwd=".", **_kwargs):
-        from foreman.push import Aborted
+        from forman.push import Aborted
 
         script = self.per_slice.pop(0) if self.per_slice else dict(self.default)
         self.calls.append({"prose": prose, "cwd": cwd, "script": script})

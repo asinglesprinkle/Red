@@ -14,7 +14,7 @@ The block is on the SDK import rather than on `run_agent` and `run_conversation`
 themselves, because those two are captured as default argument values when their
 callers are defined. Rebinding the module attribute afterwards would not change
 what any of those defaults point at, and the guard would quietly do nothing.
-Foreman imports the SDK lazily inside both functions, so this is the one place
+Forman imports the SDK lazily inside both functions, so this is the one place
 every path really does pass through.
 """
 

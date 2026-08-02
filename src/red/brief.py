@@ -4,21 +4,21 @@ I describe what I want; an agent asks about the gaps and drafts a project. This
 is the only phase that writes a project to Linear on purpose.
 
 The questions are the point. A project drafted here is sliced later by a
-different agent, and each slice is handed to Foreman, which hands it to another
+different agent, and each slice is handed to Forman, which hands it to another
 agent again. Nobody downstream can ask the original question. An ambiguity left
 here does not produce a vague project, it produces a confident wrong one three
 sessions later.
 
 Splitting rule: a scope item is a slice that could ship on its own. That is the
-same rule Foreman uses for tickets, one level up.
+same rule Forman uses for tickets, one level up.
 """
 
 from __future__ import annotations
 
 from typing import Callable
 
-from foreman.spawn import DEFAULT_MODEL, AgentRun, extract_last_json, run_conversation
-from foreman.topo import CycleError, topo_sort
+from forman.spawn import DEFAULT_MODEL, AgentRun, extract_last_json, run_conversation
+from forman.topo import CycleError, topo_sort
 
 from .models import Project, ScopeItem
 from .scope import SCOPE_HEADING, parse_scope, render_scope, split_scope
@@ -122,7 +122,7 @@ def parse_brief(text: str) -> dict:
 
 def to_project(fields: dict) -> Project:
     """Build a Project with its scope items ordered so nothing precedes its
-    blocker, the way Foreman orders sub-tasks before numbering them."""
+    blocker, the way Forman orders sub-tasks before numbering them."""
     raw = [entry for entry in fields["scope_items"] if isinstance(entry, dict)]
     ordered = _dependency_order(raw)
 
@@ -213,7 +213,7 @@ def render_content(project: Project) -> str:
 def render_draft(project: Project) -> str:
     """What the human reviews before anything is created, and what $EDITOR opens.
 
-    Same shape as Foreman's ticket drafts: frontmatter for the fields Linear
+    Same shape as Forman's ticket drafts: frontmatter for the fields Linear
     stores beside the body, then the body itself. Round-trips through
     parse_draft.
     """
@@ -289,7 +289,7 @@ def parse_content(content: str) -> dict:
 def parse_draft(text: str) -> Project:
     """Read a draft back after a human has edited it.
 
-    Deliberately forgiving in the same way Foreman's is: someone editing their
+    Deliberately forgiving in the same way Forman's is: someone editing their
     own project in vim should not have to get YAML exactly right for their work
     to survive.
     """
@@ -341,7 +341,7 @@ def draft_project(
     Nothing here touches Linear. Creating is the caller's job, after a human has
     said so.
     """
-    from foreman.review import Question
+    from forman.review import Question
 
     rounds = 0
 

@@ -1,14 +1,14 @@
 """The pipe, and the promise it makes.
 
-Red proposes. You decide. Nothing reaches Foreman that you did not see on the
+Red proposes. You decide. Nothing reaches Forman that you did not see on the
 way past, and nothing you typed is ever second-guessed. Every test here exists
 to keep that true.
 """
 
 from __future__ import annotations
 
-from foreman.review import Approval, Decision, Question
-from foreman.models import Ticket
+from forman.review import Approval, Decision, Question
+from forman.models import Ticket
 
 from red.relay import NOTHING_FOUND, RelayReviewer, draft_answer
 from red.models import ScopeItem
@@ -111,7 +111,7 @@ def test_the_header_says_which_project_and_slice_you_are_in():
 
     reviewer.answer(Question(text="Which endpoints?"))
 
-    assert "-- foreman asks (Rate limiting, slice 2 of 2) --" in human.shown
+    assert "-- forman asks (Rate limiting, slice 2 of 2) --" in human.shown
 
 
 # -- the gate -----------------------------------------------------------------
@@ -139,9 +139,9 @@ def test_the_drafts_are_shown_verbatim_at_the_gate():
     reviewer.decide(_approval())
 
     assert "title: Ticket 0\ntitle: Ticket 1" in human.shown
-    # Foreman renders its drafts with `project: null`, so the gate says where
+    # Forman renders its drafts with `project: null`, so the gate says where
     # they are actually going.
-    assert "-- foreman drafted 2 issue(s) for Rate limiting --" in human.shown
+    assert "-- forman drafted 2 issue(s) for Rate limiting --" in human.shown
 
 
 def test_skip_is_a_quit_so_this_slice_creates_nothing():
@@ -151,7 +151,7 @@ def test_skip_is_a_quit_so_this_slice_creates_nothing():
         assert reviewer.decide(_approval()) == Decision("quit")
 
 
-def test_the_gate_keeps_foremans_own_vocabulary():
+def test_the_gate_keeps_formans_own_vocabulary():
     for typed, expected in [
         ("", "create"),
         ("c", "create"),

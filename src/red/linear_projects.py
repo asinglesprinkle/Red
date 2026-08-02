@@ -1,19 +1,19 @@
 """The Linear boundary for projects.
 
-Foreman's Linear layer knows a project only as a name string hanging off an
+Forman's Linear layer knows a project only as a name string hanging off an
 issue: it reads `project { name }` back, and on create it takes the first
 case-insensitive name match out of `projects(first: 100)`. That is enough for
-Foreman, which never has to find a project or make one. It is not enough here.
+Forman, which never has to find a project or make one. It is not enough here.
 
-So this module adds the project half, in Foreman's own idiom: raw GraphQL
+So this module adds the project half, in Forman's own idiom: raw GraphQL
 through a `GraphQLLinearClient`, whose `.query()` already carries the auth
 header, the error handling, and the injectable transport the tests run against.
-Nothing is reimplemented that Foreman already does.
+Nothing is reimplemented that Forman already does.
 
 Three things live here:
 
   LinearProjects      - create, find, read and comment on projects.
-  ProjectScopedLinear - a LinearClient that files everything Foreman creates
+  ProjectScopedLinear - a LinearClient that files everything Forman creates
                         into one known project, by id rather than by name.
   StubProjectClient   - JSON-file backed, no token, no network.
 """
@@ -24,7 +24,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from foreman.linear_graphql import LinearApiError
+from forman.linear_graphql import LinearApiError
 
 from .models import Project
 from .scope import split_scope
@@ -93,7 +93,7 @@ mutation RedAttachIssue($issueId: String!, $projectId: String!) {
 """
 
 # Linear scores every query for complexity. The project fragment is shallow
-# next to Foreman's issue fragment, but there is no reason to walk a workspace
+# next to Forman's issue fragment, but there is no reason to walk a workspace
 # either: a person picking a project out of more than this many is picking it by
 # name, and --project takes a name.
 PAGE_SIZE = 50
@@ -241,9 +241,9 @@ class LinearProjects:
 
 
 class ProjectScopedLinear:
-    """A LinearClient that files everything Foreman creates into one project.
+    """A LinearClient that files everything Forman creates into one project.
 
-    Foreman attaches by name, taking the first case-insensitive match out of the
+    Forman attaches by name, taking the first case-insensitive match out of the
     first hundred projects. Red is holding the real id, so it uses it. The name
     is still set, because that is what renders in the drafts a human approves.
     """
@@ -292,7 +292,7 @@ class ProjectScopedLinear:
 class StubProjectClient:
     """A working project stand-in so the loop runs end to end with no token.
 
-    Mirrors Foreman's StubLinearClient, including writing to a JSON file so a
+    Mirrors Forman's StubLinearClient, including writing to a JSON file so a
     run is inspectable afterwards.
     """
 

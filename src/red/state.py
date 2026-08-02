@@ -5,7 +5,7 @@ Layout, inside whichever repo Red was pointed at:
     .red/<slug>/state.json    the source of truth
                 manifest.md   rendered on every write, never parsed back
 
-Same split as Foreman's `.foreman/<TICKET>/`, and for the same reason: one file
+Same split as Forman's `.forman/<TICKET>/`, and for the same reason: one file
 a program owns and one file a person reads, so neither has to compromise for the
 other.
 

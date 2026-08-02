@@ -3,7 +3,7 @@
 This is the seam between the two halves of Red. `red push` writes it, a human
 edits it in Linear, and `red pull` reads whatever survived that edit.
 
-The parser is deliberately forgiving, for the same reason Foreman's
+The parser is deliberately forgiving, for the same reason Forman's
 `parse_ticket_markdown` is: someone rewriting their own project in Linear's
 editor should not have to keep the numbering consecutive, the markers intact, or
 the `depends_on` lines present for their work to survive. Anything it cannot

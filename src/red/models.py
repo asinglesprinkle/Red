@@ -1,13 +1,13 @@
 """Data model for the project layer.
 
-Same rule as Foreman's models.py: everything crossing a layer boundary is one of
+Same rule as Forman's models.py: everything crossing a layer boundary is one of
 these dataclasses, so a fake only has to return one of them rather than
 impersonate Linear or an SDK.
 
-Two units exist here that Foreman does not have. A `Project` is what a human
+Two units exist here that Forman does not have. A `Project` is what a human
 reviews and edits in Linear. A `ScopeItem` is one independently shippable slice
-of it, and is the prose a single `foreman push` gets handed. Foreman's Ticket
-stays Foreman's; Red never redefines it.
+of it, and is the prose a single `forman push` gets handed. Forman's Ticket
+stays Forman's; Red never redefines it.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from enum import Enum
 
 
 def iso_now() -> str:
-    """UTC timestamp in ISO 8601, matching Foreman's."""
+    """UTC timestamp in ISO 8601, matching Forman's."""
     return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
 
 
@@ -39,7 +39,7 @@ class ItemStatus(str, Enum):
 class ScopeItem:
     """One independently shippable slice of a project.
 
-    `prose` is handed to `foreman push` verbatim. `depends_on` holds the
+    `prose` is handed to `forman push` verbatim. `depends_on` holds the
     positions of other items in the same project, 1-based, in the order they
     appear after parsing.
     """
@@ -104,7 +104,7 @@ class ProjectState:
     """Contents of `.red/<slug>/state.json`. The source of truth for a pull.
 
     `manifest.md` is rendered from this on every write and never parsed back,
-    the same way Foreman treats its own manifest.
+    the same way Forman treats its own manifest.
     """
 
     project_id: str

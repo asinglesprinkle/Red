@@ -2,7 +2,7 @@
 
 Every other module takes its input and output as injected callables, which is
 what lets the whole thing be tested without a terminal, a model, or an account.
-That is Foreman's rule, kept.
+That is Forman's rule, kept.
 """
 
 from __future__ import annotations
@@ -12,13 +12,13 @@ import os
 import sys
 from pathlib import Path
 
-from foreman.config import MissingApiKey, load_settings
-from foreman.git_ops import GitError, ensure_ignored, repo_root
-from foreman.linear_graphql import GraphQLLinearClient, LinearApiError
-from foreman.linear_client import StubLinearClient, stub_path as foreman_stub_path
-from foreman.push import Aborted as PushAborted
-from foreman.push import PushError, push_interactive
-from foreman.review import CREATE, EDIT, FEEDBACK, QUIT, Approval
+from forman.config import MissingApiKey, load_settings
+from forman.git_ops import GitError, ensure_ignored, repo_root
+from forman.linear_graphql import GraphQLLinearClient, LinearApiError
+from forman.linear_client import StubLinearClient, stub_path as forman_stub_path
+from forman.push import Aborted as PushAborted
+from forman.push import PushError, push_interactive
+from forman.review import CREATE, EDIT, FEEDBACK, QUIT, Approval
 
 from .brief import Aborted, BriefError, draft_project, parse_draft, redraft_project, render_draft
 from .linear_projects import (
@@ -40,7 +40,7 @@ from .state import RED_DIR, StateStore
 
 
 def resolve_repo(given: str | None) -> str:
-    """Red reads the repository to ground what it drafts, the same way Foreman
+    """Red reads the repository to ground what it drafts, the same way Forman
     does. It never writes to it beyond `.red/`."""
     start = Path(given or ".").resolve()
     try:
@@ -78,7 +78,7 @@ def build_clients(repo: str, backend: str):
     if backend == "stub":
         return (
             StubProjectClient(path=stub_path(repo)),
-            StubLinearClient(path=foreman_stub_path(repo)),
+            StubLinearClient(path=forman_stub_path(repo)),
             "TEAM",
         )
     settings = load_settings(repo)
@@ -169,7 +169,7 @@ def _approve(project: Project, *, prose: str, reviewer, repo: str) -> Project:
 class ProjectReviewer:
     """The terminal gate for `red push`.
 
-    Foreman's TerminalReviewer would do, except that its approval prompt counts
+    Forman's TerminalReviewer would do, except that its approval prompt counts
     tickets and there are none here yet. Everything else about it is kept, down
     to treating an empty line as assent.
     """
@@ -187,7 +187,7 @@ class ProjectReviewer:
         return self._ask("\n> ")
 
     def decide(self, approval):
-        from foreman.review import parse_decision
+        from forman.review import parse_decision
 
         self._show("")
         self._show(approval.rendered)
@@ -209,11 +209,11 @@ def cmd_pull(args: argparse.Namespace) -> int:
             return 1
 
         ensure_ignored(repo, f"{RED_DIR}/")
-        # The offline backend writes issues to Foreman's own stub file, so that
-        # `foreman pull --linear stub` can see what Red filed. That means Red
-        # can be the first thing to create `.foreman/` in a repo, and it should
+        # The offline backend writes issues to Forman's own stub file, so that
+        # `forman pull --linear stub` can see what Red filed. That means Red
+        # can be the first thing to create `.forman/` in a repo, and it should
         # not leave it lying untracked for someone else to notice.
-        ensure_ignored(repo, ".foreman/")
+        ensure_ignored(repo, ".forman/")
         if not project.scope:
             print(f"{project.name} has no scope items to pull.", file=sys.stderr)
             print("Add some in Linear under the Scope heading, then try again.")
@@ -301,7 +301,7 @@ def _report(report, project: Project) -> int:
         print(f"\n{report.remaining} scope item(s) still to go. Run `red pull` again.")
     if report.url:
         print(f"\n{report.url}")
-    print("\nThe project status is unchanged. Foreman can pull these issues now.")
+    print("\nThe project status is unchanged. Forman can pull these issues now.")
     return 0
 
 
@@ -328,7 +328,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="red",
         description=(
             "Talk it through, file a Linear project, then turn a reviewed "
-            "project into issues with Foreman."
+            "project into issues with Forman."
         ),
     )
     parser.add_argument("--repo", help="repository to work in (default: cwd)")

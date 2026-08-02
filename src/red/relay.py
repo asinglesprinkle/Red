@@ -1,12 +1,12 @@
 """The pipe.
 
-Foreman stops at a human twice in its push phase: once when its agent has a
+Forman stops at a human twice in its push phase: once when its agent has a
 question, once when the drafts are ready. Red is standing where that human
 stands. It does not get to answer.
 
 What Red does instead is spare you the lookup. It reads the project brief you
 already approved and proposes a first answer, labelled as its own, and then
-waits. Empty line accepts it. Anything else replaces it. Nothing reaches Foreman
+waits. Empty line accepts it. Anything else replaces it. Nothing reaches Forman
 that you did not see on the way past.
 
 The asymmetry is deliberate and load bearing:
@@ -23,8 +23,8 @@ from __future__ import annotations
 
 from typing import Callable
 
-from foreman.review import Approval, Decision, Question, parse_decision
-from foreman.spawn import DEFAULT_MODEL, run_agent
+from forman.review import Approval, Decision, Question, parse_decision
+from forman.spawn import DEFAULT_MODEL, run_agent
 
 from .models import ScopeItem, Project
 
@@ -97,7 +97,7 @@ def draft_answer(
 
 
 class RelayReviewer:
-    """Foreman asks; you answer. Red only ever hands you a first draft."""
+    """Forman asks; you answer. Red only ever hands you a first draft."""
 
     def __init__(
         self,
@@ -123,7 +123,7 @@ class RelayReviewer:
         self.verbatim = verbatim
         self.drafter = drafter
         self.model = model
-        # What actually went to Foreman, in order. The CLI prints nothing from
+        # What actually went to Forman, in order. The CLI prints nothing from
         # this; it exists so a test can prove the human's word was the one sent.
         self.sent: list[str] = []
         self.proposed: list[str] = []
@@ -135,7 +135,7 @@ class RelayReviewer:
 
     def answer(self, question: Question) -> str:
         self._show("")
-        self._show(f"-- foreman asks ({self.project.name}, {self.position}) --")
+        self._show(f"-- forman asks ({self.project.name}, {self.position}) --")
         self._show("")
         self._show(question.text)  # verbatim, always
 
@@ -168,12 +168,12 @@ class RelayReviewer:
     def decide(self, approval: Approval) -> Decision:
         """The gate. Red proposes nothing here, on purpose."""
         self._show("")
-        # Naming the project here is not decoration. Foreman renders its own
+        # Naming the project here is not decoration. Forman renders its own
         # drafts with `project: null`, because it does not know yet that Red is
         # about to file them somewhere; without this line the gate would look
         # like it was about to create loose issues.
         self._show(
-            f"-- foreman drafted {len(approval.tickets)} issue(s) "
+            f"-- forman drafted {len(approval.tickets)} issue(s) "
             f"for {self.project.name} --"
         )
         self._show("")
