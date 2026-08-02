@@ -7,18 +7,17 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
   "claude-agent-sdk>=0.1.0",
-  # Forman master as of the type-ahead guard on its own gate. Red does not
-  # import forman.cli, so nothing here depends on that commit; it is pinned
-  # anyway because installing Forman puts a `forman` script in this venv, and
-  # a stale one would be a gate without the guard. The commit before it is
-  # on_activity reaching push_interactive, which Red does depend on: it is
-  # what lets both halves show that an agent is working rather than hung.
+  # Forman master as of forman.progress, which Red imports directly: the live
+  # display and the type-ahead guard live there now, shared by both CLIs
+  # rather than duplicated into this one. Earlier commits carry on_activity
+  # through run_conversation and push_interactive, which is what lets both
+  # halves of Red show that an agent is working rather than hung.
   # Further back is the merge of #2, which first carried forman.review (spelled
   # foreman.review), the seam Red is built on. Pinned to a SHA rather than to
   # master: nothing in Forman is exported from __init__ and it makes no
   # stability promise, so tracking a branch would make Red depend on whatever
   # happened to be pushed. Bump this deliberately.
-  "forman @ git+https://github.com/cmichaelsd/Forman@ac318d69b6c0f0c77754103674a85347985fe4da",
+  "forman @ git+https://github.com/cmichaelsd/Forman@19b677f6dd100cc1e84852e2dd8f6f91a50a58f2",
 ]
 
 [project.optional-dependencies]
