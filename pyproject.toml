@@ -1,7 +1,7 @@
 [project]
 name = "red"
 version = "0.1.0"
-description = "Talk to a product manager, get a reviewed Linear project, then let Forman turn it into issues."
+description = "Talk to a technical project manager, get a reviewed Linear project, then let Forman turn it into issues."
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]

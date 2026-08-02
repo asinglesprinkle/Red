@@ -2,8 +2,8 @@
 
 # Red
 
-Talk it through with a product manager, get a Linear project you approved, then
-let Forman turn it into tickets.
+Talk it through with a technical project manager, get a Linear project you
+approved, then let Forman turn it into tickets.
 
 ---
 
@@ -267,8 +267,6 @@ your words are the ones sent, and that no run ever moves a project. No network,
 no account, no model calls: an autouse fixture in `tests/conftest.py` makes any
 attempt to start a real agent session fail loudly rather than hang. Fakes are
 hand-written; there is no mocking library.
-
-`docs/build-spec.md` is the original specification, kept for provenance.
 
 ## License
 
