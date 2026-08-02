@@ -17,7 +17,13 @@ from __future__ import annotations
 
 from typing import Callable
 
-from forman.spawn import DEFAULT_MODEL, AgentRun, extract_last_json, run_conversation
+from forman.spawn import (
+    DEFAULT_MODEL,
+    Activity,
+    AgentRun,
+    extract_last_json,
+    run_conversation,
+)
 from forman.topo import CycleError, topo_sort
 
 from .models import Project, ScopeItem
@@ -335,11 +341,16 @@ def draft_project(
     cwd: str = ".",
     conversation: Callable[..., AgentRun] = run_conversation,
     model: str | None = DEFAULT_MODEL,
+    on_activity: Callable[[Activity], None] | None = None,
 ) -> Project:
     """Talk it through until the agent stops asking, then return the draft.
 
     Nothing here touches Linear. Creating is the caller's job, after a human has
     said so.
+
+    The agent reads the repository before it says anything, which can take
+    minutes. `on_activity` is how the terminal shows that is happening; see
+    `cli.Progress`.
     """
     from forman.review import Question
 
@@ -363,6 +374,7 @@ def draft_project(
         allowed_tools=READ_ONLY_TOOLS,
         max_rounds=MAX_QUESTION_ROUNDS + 2,
         model=model,
+        on_activity=on_activity,
     )
     if run.error:
         raise BriefError(f"brief session failed: {run.error}")
@@ -378,6 +390,7 @@ def redraft_project(
     cwd: str = ".",
     conversation: Callable[..., AgentRun] = run_conversation,
     model: str | None = DEFAULT_MODEL,
+    on_activity: Callable[[Activity], None] | None = None,
 ) -> Project:
     """Revise a draft with feedback, without asking anything further."""
     run = conversation(
@@ -392,6 +405,7 @@ def redraft_project(
         allowed_tools=READ_ONLY_TOOLS,
         max_rounds=1,
         model=model,
+        on_activity=on_activity,
     )
     if run.error:
         raise BriefError(f"redraft failed: {run.error}")

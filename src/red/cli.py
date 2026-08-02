@@ -10,7 +10,9 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import time
 from pathlib import Path
+from typing import Callable
 
 from forman.config import MissingApiKey, load_settings
 from forman.git_ops import GitError, ensure_ignored, repo_root
@@ -19,6 +21,7 @@ from forman.linear_client import StubLinearClient, stub_path as forman_stub_path
 from forman.push import Aborted as PushAborted
 from forman.push import PushError, push_interactive
 from forman.review import CREATE, EDIT, FEEDBACK, QUIT, Approval
+from forman.spawn import Activity, describe_activity
 
 from .brief import Aborted, BriefError, draft_project, parse_draft, redraft_project, render_draft
 from .linear_projects import (
@@ -63,6 +66,52 @@ def _edit_in_editor(text: str, suffix: str = ".md") -> str:
         return Path(path).read_text(encoding="utf-8")
     finally:
         Path(path).unlink(missing_ok=True)
+
+
+class Progress:
+    """What the terminal shows while an agent is working and has said nothing.
+
+    The first thing `red push` does after you press enter is send the agent off
+    to read your repository, which can run for minutes before a single word
+    comes back. Without this the terminal is indistinguishable from a hang.
+
+    Writes to stderr on purpose: `--dry-run` puts the draft on stdout, and that
+    has to stay pipeable.
+    """
+
+    def __init__(self, stream=None, clock: Callable[[], float] = time.monotonic) -> None:
+        self._stream = stream if stream is not None else sys.stderr
+        self._clock = clock
+        self._started: float | None = None
+
+    def start(self, what: str) -> None:
+        self._started = self._clock()
+        self._write(f"{what}... (ctrl-c to abort)")
+
+    def __call__(self, activity: Activity) -> None:
+        """Called from inside the agent session, once per thing it does."""
+        if self._started is None:
+            self.start("working")
+        self._write(f"  {self._elapsed()}  {describe_activity(activity)}")
+
+    def done(self) -> None:
+        self._started = None
+
+    def _elapsed(self) -> str:
+        # `is None`, not a truth test: a monotonic clock can legitimately start
+        # at 0.0, and treating that as unset pins the display to 0:00 forever.
+        started = self._started if self._started is not None else self._clock()
+        seconds = int(self._clock() - started)
+        return f"{seconds // 60}:{seconds % 60:02d}"
+
+    def _write(self, line: str) -> None:
+        print(line, file=self._stream, flush=True)
+
+
+def _progress() -> Progress | None:
+    """Only narrate to a human watching a terminal. Piped or redirected, stay
+    quiet: nothing downstream asked for a running commentary."""
+    return Progress() if sys.stderr.isatty() else None
 
 
 def _ask(prompt: str) -> str:
@@ -110,11 +159,20 @@ def cmd_push(args: argparse.Namespace) -> int:
         return 2
 
     reviewer = ProjectReviewer(ask=_ask, show=print)
+    progress = _progress()
 
     try:
         projects, _linear, team_key = build_clients(repo, args.linear)
-        project = draft_project(prose=prose, reviewer=reviewer, cwd=repo)
-        project = _approve(project, prose=prose, reviewer=reviewer, repo=repo)
+        if progress:
+            progress.start("reading the repository and drafting")
+        project = draft_project(
+            prose=prose, reviewer=reviewer, cwd=repo, on_activity=progress
+        )
+        if progress:
+            progress.done()
+        project = _approve(
+            project, prose=prose, reviewer=reviewer, repo=repo, progress=progress
+        )
         if args.dry_run:
             print(render_draft(project))
             print("dry run: nothing was created.")
@@ -141,7 +199,9 @@ def cmd_push(args: argparse.Namespace) -> int:
     return 0
 
 
-def _approve(project: Project, *, prose: str, reviewer, repo: str) -> Project:
+def _approve(
+    project: Project, *, prose: str, reviewer, repo: str, progress=None
+) -> Project:
     """Show the draft and do only what you are told to do with it."""
     while True:
         decision = reviewer.decide(
@@ -161,9 +221,17 @@ def _approve(project: Project, *, prose: str, reviewer, repo: str) -> Project:
         if decision.action != FEEDBACK:
             raise BriefError(f"unknown action: {decision.action!r}")
 
+        if progress:
+            progress.start("redrafting")
         project = redraft_project(
-            prose=prose, project=project, feedback=decision.feedback, cwd=repo
+            prose=prose,
+            project=project,
+            feedback=decision.feedback,
+            cwd=repo,
+            on_activity=progress,
         )
+        if progress:
+            progress.done()
 
 
 class ProjectReviewer:
