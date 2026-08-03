@@ -2,8 +2,18 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.ruff_cache/
 dist/
 build/
 *.egg-info/
+
+# Red's own bookkeeping, and Forman's from a run that targets this repo.
+# Both are per-machine scratch state, not part of the project.
 .red/
+.forman/
+
+# Secrets. Red has no config of its own and reads Forman's, but a stray
+# .env here would still be a key on disk. Never commit it.
 .env
+.env.*
+!.env.example
