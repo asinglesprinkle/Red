@@ -7,7 +7,11 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
   "claude-agent-sdk>=0.1.0",
-  # Forman master as of the session lockdown: agents are held to the toolset
+  # Forman master as of the cursor walk: forman.linear_graphql.paginate, which
+  # Red's project queries page through. Red needs this one directly - find()
+  # reading back None for a project that exists on the second page is exactly
+  # the silent misfiling linear_projects.py was written to prevent.
+  # Before that, the session lockdown: agents are held to the toolset
   # their contract names and cut off from inherited MCP servers. Red depends on
   # that directly - its brief, redraft and relay agents are all read-only, and
   # before this they were handed Bash and whatever MCP config the machine had,
@@ -21,7 +25,7 @@ dependencies = [
   # master: nothing in Forman is exported from __init__ and it makes no
   # stability promise, so tracking a branch would make Red depend on whatever
   # happened to be pushed. Bump this deliberately.
-  "forman @ git+https://github.com/cmichaelsd/Forman@980b450008e145609808eee6587d6a49e39b62a3",
+  "forman @ git+https://github.com/cmichaelsd/Forman@ee6dfc4531adafa94a486a16b28013766496d5c9",
 ]
 
 [project.optional-dependencies]

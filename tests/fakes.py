@@ -50,6 +50,9 @@ class FakeTransport:
 
     Keyed on a substring of the query, so a test names the operation it means
     rather than repeating the whole document.
+
+    A payload may be a list, which is successive pages of one connection handed
+    out in call order. That is how a test says "this query is paginated".
     """
 
     def __init__(self, responses: dict[str, Any]) -> None:
@@ -60,6 +63,10 @@ class FakeTransport:
         self.calls.append((query, variables))
         for marker, payload in self.responses.items():
             if marker in query:
+                if isinstance(payload, list):
+                    # The last page is replayed if anything asks again, so an
+                    # over-eager walk shows up as a wrong answer, not a KeyError.
+                    payload = payload.pop(0) if len(payload) > 1 else payload[0]
                 return {"data": payload} if "data" not in payload else payload
         raise AssertionError(f"no canned response for query:\n{query}")
 

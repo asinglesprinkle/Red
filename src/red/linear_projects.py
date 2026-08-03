@@ -2,8 +2,8 @@
 
 Forman's Linear layer knows a project only as a name string hanging off an
 issue: it reads `project { name }` back, and on create it takes the first
-case-insensitive name match out of `projects(first: 100)`. That is enough for
-Forman, which never has to find a project or make one. It is not enough here.
+case-insensitive name match. That is enough for Forman, which never has to
+find a project or make one. It is not enough here.
 
 So this module adds the project half, in Forman's own idiom: raw GraphQL
 through a `GraphQLLinearClient`, whose `.query()` already carries the auth
@@ -24,7 +24,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from forman.linear_graphql import LinearApiError
+from forman.linear_graphql import LinearApiError, paginate
 
 from .models import Project
 from .scope import split_scope
@@ -52,8 +52,11 @@ _PROJECT_FIELDS = """
 """
 
 _PROJECTS_QUERY = f"""
-query RedProjects($first: Int!) {{
-  projects(first: $first) {{ nodes {{ {_PROJECT_FIELDS} }} }}
+query RedProjects($first: Int!, $after: String) {{
+  projects(first: $first, after: $after) {{
+    nodes {{ {_PROJECT_FIELDS} }}
+    pageInfo {{ hasNextPage endCursor }}
+  }}
 }}
 """
 
@@ -93,9 +96,10 @@ mutation RedAttachIssue($issueId: String!, $projectId: String!) {
 """
 
 # Linear scores every query for complexity. The project fragment is shallow
-# next to Forman's issue fragment, but there is no reason to walk a workspace
-# either: a person picking a project out of more than this many is picking it by
-# name, and --project takes a name.
+# next to Forman's issue fragment, but it does pull `content`, so this asks for
+# a moderate page and walks the cursor rather than taking Linear's maximum in
+# one bite. It is a page size, not a ceiling: `find` refusing to see a project
+# that exists is the failure this module was written to prevent.
 PAGE_SIZE = 50
 
 
@@ -140,9 +144,12 @@ class LinearProjects:
 
     # -- reads ---------------------------------------------------------------
 
-    def list_projects(self, first: int = PAGE_SIZE) -> list[Project]:
-        data = self.client.query(_PROJECTS_QUERY, first=first)
-        return [project_from_node(n) for n in data["projects"]["nodes"]]
+    def list_projects(self, limit: int | None = None) -> list[Project]:
+        """Every project in the workspace. `limit` stops the walk early."""
+        nodes = paginate(
+            self.client.query, _PROJECTS_QUERY, "projects", first=PAGE_SIZE, limit=limit
+        )
+        return [project_from_node(n) for n in nodes]
 
     def get(self, project_id: str) -> Project:
         node = self.client.query(_PROJECT_QUERY, id=project_id)["project"]
@@ -247,9 +254,9 @@ class LinearProjects:
 class ProjectScopedLinear:
     """A LinearClient that files everything Forman creates into one project.
 
-    Forman attaches by name, taking the first case-insensitive match out of the
-    first hundred projects. Red is holding the real id, so it uses it. The name
-    is still set, because that is what renders in the drafts a human approves.
+    Forman attaches by name, taking the first case-insensitive match. Red is
+    holding the real id, so it uses it. The name is still set, because that is
+    what renders in the drafts a human approves.
     """
 
     def __init__(self, inner: Any, projects: LinearProjects, project: Project) -> None:
@@ -343,8 +350,8 @@ class StubProjectClient:
 
     # -- the LinearProjects surface ------------------------------------------
 
-    def list_projects(self, first: int = PAGE_SIZE) -> list[Project]:
-        return list(self.projects)[:first]
+    def list_projects(self, limit: int | None = None) -> list[Project]:
+        return list(self.projects)[:limit] if limit else list(self.projects)
 
     def get(self, project_id: str) -> Project:
         for project in self.projects:

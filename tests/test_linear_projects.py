@@ -84,6 +84,71 @@ def test_find_matches_a_name_case_insensitively_and_a_slug_exactly():
     assert projects.find("nothing like it") is None
 
 
+def page(nodes, cursor=None):
+    """One page of RedProjects. A cursor means another page follows."""
+    return {
+        "projects": {
+            "nodes": nodes,
+            "pageInfo": {"hasNextPage": cursor is not None, "endCursor": cursor},
+        }
+    }
+
+
+def test_find_walks_past_the_first_page():
+    # The failure this prevents is the quiet one: a project that exists reading
+    # back as None, and the caller filing the work somewhere else.
+    projects, transport = client(
+        {
+            "RedProjects": [
+                page([node("Something else", id="a", slugId="a1")], cursor="page2"),
+                page([node("Rate limiting", id="b", slugId="b1")]),
+            ]
+        }
+    )
+
+    assert projects.find("rate limiting").id == "b"
+    assert [v["after"] for v in transport.variables_for("RedProjects")] == [
+        None,
+        "page2",
+    ]
+
+
+def test_ready_sees_projects_on_later_pages():
+    projects, _t = client(
+        {
+            "RedProjects": [
+                page([node("Ready one", status=READY_STATUS)], cursor="page2"),
+                page([node("Ready two", status=READY_STATUS)]),
+            ]
+        }
+    )
+    assert [p.name for p in projects.ready()] == ["Ready one", "Ready two"]
+
+
+def test_a_duplicate_name_on_a_later_page_is_still_refused():
+    # The ambiguity guard is only a guard if it can see both of them.
+    projects, _t = client(
+        {
+            "RedProjects": [
+                page([node("Rate limiting", id="a", slugId="a1")], cursor="page2"),
+                page([node("Rate limiting", id="b", slugId="b1")]),
+            ]
+        }
+    )
+    with pytest.raises(LinearApiError, match="2 projects are called"):
+        projects.find("Rate limiting")
+
+
+def test_a_response_without_pageinfo_stops_after_one_page():
+    # Truncating is survivable; walking forever against Linear is not.
+    projects, transport = client(
+        {"RedProjects": {"projects": {"nodes": [node("Rate limiting")]}}}
+    )
+
+    assert len(projects.list_projects()) == 1
+    assert len(transport.variables_for("RedProjects")) == 1
+
+
 def test_two_projects_with_the_same_name_are_refused_not_guessed():
     projects, _t = client(
         {
