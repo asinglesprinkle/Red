@@ -146,7 +146,8 @@ def to_project(fields: dict) -> Project:
             {
                 position_of[int(ref) - 1]
                 for ref in entry.get("depends_on") or []
-                if str(ref).isdigit() and (int(ref) - 1) in position_of
+                if str(ref).isdigit()
+                and (int(ref) - 1) in position_of
                 and position_of[int(ref) - 1] != position
             }
         )
@@ -200,7 +201,9 @@ def render_content(project: Project) -> str:
     two halves of Red, and `red pull` re-reads it fresh every time, so an edit
     made there always wins over anything Red remembers.
     """
-    criteria = [f"- [ ] {c}" for c in project.success_criteria] or ["- [ ] (none given)"]
+    criteria = [f"- [ ] {c}" for c in project.success_criteria] or [
+        "- [ ] (none given)"
+    ]
     return "\n".join(
         [
             "## Outcome",

@@ -185,7 +185,9 @@ def test_the_only_issue_update_red_sends_is_the_attach():
     updates = [
         body
         for name, body in vars(module).items()
-        if name.endswith("_MUTATION") and isinstance(body, str) and "issueUpdate" in body
+        if name.endswith("_MUTATION")
+        and isinstance(body, str)
+        and "issueUpdate" in body
     ]
     assert updates == [module._ATTACH_MUTATION]
     assert "projectId" in module._ATTACH_MUTATION
@@ -268,9 +270,7 @@ def test_everything_else_is_passed_straight_through():
 
 
 def test_the_attach_mutation_is_an_issue_update_with_a_project_id():
-    projects, transport = client(
-        {"RedAttachIssue": {"issueUpdate": {"success": True}}}
-    )
+    projects, transport = client({"RedAttachIssue": {"issueUpdate": {"success": True}}})
     projects.attach("issue-uuid", "project-uuid")
 
     variables = transport.variables_for("RedAttachIssue")[0]

@@ -167,7 +167,9 @@ def test_feedback_is_carried_through_verbatim():
     human = ScriptedHuman(["  split the auth part out  "])
     reviewer, _calls = relay(human)
 
-    assert reviewer.decide(_approval()) == Decision("feedback", "split the auth part out")
+    assert reviewer.decide(_approval()) == Decision(
+        "feedback", "split the auth part out"
+    )
 
 
 # -- the drafter --------------------------------------------------------------

@@ -145,9 +145,7 @@ class ScriptedPush:
 
         titles = script.get("tickets") or []
         tickets = [Ticket(identifier="", title=title) for title in titles]
-        decision = reviewer.decide(
-            Approval(tickets=tickets, rendered=_render(tickets))
-        )
+        decision = reviewer.decide(Approval(tickets=tickets, rendered=_render(tickets)))
         if decision.action == "quit":
             raise Aborted("nothing created")
 

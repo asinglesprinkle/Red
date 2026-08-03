@@ -151,9 +151,7 @@ def test_a_dependency_cycle_starts_anyway_rather_than_refusing():
 
 def test_cross_slice_ordering_is_recorded_in_linear():
     linear = FakeLinear()
-    push = ScriptedPush(
-        per_slice=[{"tickets": ["one"]}, {"tickets": ["two", "three"]}]
-    )
+    push = ScriptedPush(per_slice=[{"tickets": ["one"]}, {"tickets": ["two", "three"]}])
     run_pull(make_deps(push, linear=linear), project(slices=2))
 
     # Slice 2 depends on slice 1, so slice 1's issue blocks both of slice 2's.
@@ -204,9 +202,7 @@ def test_saying_no_to_carrying_on_stops_the_run():
             raise Aborted("nothing created")
 
     push = AlwaysQuits()
-    report = run_pull(
-        make_deps(push, confirm=lambda _q: False), project(slices=3)
-    )
+    report = run_pull(make_deps(push, confirm=lambda _q: False), project(slices=3))
 
     assert report.outcome == "stopped"
     assert len(push.calls) == 1

@@ -130,7 +130,9 @@ def order_scope(project: Project) -> list[ScopeItem]:
 
 
 def opening_for(brief: str, item: ScopeItem) -> str:
-    return _OPENING.format(brief=brief.strip(), title=item.title, prose=item.prose.strip())
+    return _OPENING.format(
+        brief=brief.strip(), title=item.title, prose=item.prose.strip()
+    )
 
 
 def run_pull(deps: Deps, project: Project) -> PullReport:
@@ -152,7 +154,11 @@ def run_pull(deps: Deps, project: Project) -> PullReport:
     deps.store.save(state)
 
     ordered = order_scope(project)
-    pending = [item for item in ordered if _record(state, item).status == ItemStatus.PENDING.value]
+    pending = [
+        item
+        for item in ordered
+        if _record(state, item).status == ItemStatus.PENDING.value
+    ]
     if not pending:
         report.outcome = "no_work"
         report.issues = state.created_issues()

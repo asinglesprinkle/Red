@@ -147,7 +147,9 @@ def cmd_push(args: argparse.Namespace) -> int:
         print("What do you want to achieve? (a paragraph is fine)")
         prose = input("> ").strip()
     if not prose or not prose.strip():
-        print("nothing to push: give prose as an argument or on stdin.", file=sys.stderr)
+        print(
+            "nothing to push: give prose as an argument or on stdin.", file=sys.stderr
+        )
         return 2
 
     reviewer = ProjectReviewer(ask=_ask, show=print)
@@ -202,9 +204,7 @@ def _approve(
 ) -> Project:
     """Show the draft and do only what you are told to do with it."""
     while True:
-        decision = reviewer.decide(
-            Approval(tickets=[], rendered=render_draft(project))
-        )
+        decision = reviewer.decide(Approval(tickets=[], rendered=render_draft(project)))
 
         if decision.action == CREATE:
             return project
@@ -411,7 +411,9 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     push = sub.add_parser("push", help="talk it through and file a Linear project")
-    push.add_argument("prose", nargs="?", help="what you want; read from stdin if absent")
+    push.add_argument(
+        "prose", nargs="?", help="what you want; read from stdin if absent"
+    )
     push.add_argument(
         "--dry-run", action="store_true", help="print the draft and create nothing"
     )
