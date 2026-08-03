@@ -21,12 +21,12 @@ The asymmetry is deliberate and load bearing:
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from forman.review import Approval, Decision, Question, parse_decision
 from forman.spawn import DEFAULT_MODEL, READ_ONLY_TOOLS, run_agent
 
-from .models import ScopeItem, Project
+from .models import Project, ScopeItem
 
 # Short on purpose. This is a lookup in a document you already read, not a piece
 # of research, and every round of it sits between you and your next keystroke.

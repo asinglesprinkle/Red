@@ -68,7 +68,7 @@ class FakeTransport:
         names = []
         for query, _variables in self.calls:
             for token in query.split():
-                if token.startswith("Red") or token.startswith("Forman"):
+                if token.startswith(("Red", "Forman")):
                     names.append(token.split("(")[0].split("{")[0])
                     break
         return names

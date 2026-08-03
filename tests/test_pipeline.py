@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
+from fakes import FROZEN, AutoApprove, FakeStore, ScriptedPush, project
 from forman.models import Ticket
 
 from red.models import ItemStatus, ScopeItem
 from red.pipeline import Deps, opening_for, order_scope, run_pull, summary_comment
 from red.state import StateStore, reconcile
-
-from fakes import FROZEN, AutoApprove, FakeStore, ScriptedPush, project
 
 
 class FakeLinear:

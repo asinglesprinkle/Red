@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 import pytest
-
+from fakes import ScriptedConversation, brief_json
 from forman.review import Approval, Decision, Question
 
 from red.brief import (
@@ -17,8 +17,6 @@ from red.brief import (
     render_draft,
     to_project,
 )
-
-from fakes import ScriptedConversation, brief_json
 
 
 class Answering:

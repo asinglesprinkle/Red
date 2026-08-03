@@ -6,11 +6,11 @@ about that edit not costing them their work.
 
 from __future__ import annotations
 
+from fakes import project
+
 from red.brief import parse_content, parse_draft, render_content, render_draft
 from red.models import Project, ScopeItem
 from red.scope import SCOPE_MARKER, parse_scope, render_scope, split_scope
-
-from fakes import project
 
 
 def test_scope_round_trips():
@@ -36,27 +36,26 @@ def test_a_whole_project_round_trips_through_the_draft_format():
 
 def test_an_inserted_slice_renumbers_and_keeps_its_ordering():
     """Someone adds a slice at the top in Linear and does not renumber."""
-    block = "\n".join(
-        [
-            SCOPE_MARKER,
-            "### 3. Do the new thing first",
-            "depends_on: []",
-            "",
-            "New prose.",
-            "",
-            SCOPE_MARKER,
-            "### 1. Add a token bucket",
-            "depends_on: []",
-            "",
-            "Implement it.",
-            "",
-            SCOPE_MARKER,
-            "### 2. Wire it in",
-            "depends_on: [1]",
-            "",
-            "Call it.",
-        ]
-    )
+    lines = [
+        SCOPE_MARKER,
+        "### 3. Do the new thing first",
+        "depends_on: []",
+        "",
+        "New prose.",
+        "",
+        SCOPE_MARKER,
+        "### 1. Add a token bucket",
+        "depends_on: []",
+        "",
+        "Implement it.",
+        "",
+        SCOPE_MARKER,
+        "### 2. Wire it in",
+        "depends_on: [1]",
+        "",
+        "Call it.",
+    ]
+    block = "\n".join(lines)
     items = parse_scope(block)
 
     assert [i.number for i in items] == [1, 2, 3]
@@ -71,36 +70,34 @@ def test_an_inserted_slice_renumbers_and_keeps_its_ordering():
 
 def test_scope_survives_losing_every_marker():
     """Linear's editor, or a person, strips the HTML comments."""
-    block = "\n".join(
-        [
-            "### 1. Add a token bucket",
-            "depends_on: []",
-            "",
-            "Implement it.",
-            "",
-            "### 2. Wire it in",
-            "depends_on: [1]",
-            "",
-            "Call it.",
-        ]
-    )
+    lines = [
+        "### 1. Add a token bucket",
+        "depends_on: []",
+        "",
+        "Implement it.",
+        "",
+        "### 2. Wire it in",
+        "depends_on: [1]",
+        "",
+        "Call it.",
+    ]
+    block = "\n".join(lines)
     items = parse_scope(block)
     assert [i.title for i in items] == ["Add a token bucket", "Wire it in"]
     assert items[1].depends_on == [1]
 
 
 def test_scope_survives_losing_the_numbering_and_the_depends_lines():
-    block = "\n".join(
-        [
-            "### Add a token bucket",
-            "",
-            "Implement it.",
-            "",
-            "### Wire it in",
-            "",
-            "Call it.",
-        ]
-    )
+    lines = [
+        "### Add a token bucket",
+        "",
+        "Implement it.",
+        "",
+        "### Wire it in",
+        "",
+        "Call it.",
+    ]
+    block = "\n".join(lines)
     items = parse_scope(block)
     assert [(i.number, i.title, i.depends_on) for i in items] == [
         (1, "Add a token bucket", []),

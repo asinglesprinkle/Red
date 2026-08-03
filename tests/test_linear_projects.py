@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 import pytest
-
+from fakes import FakeTransport, project
 from forman.linear_graphql import GraphQLLinearClient, LinearApiError
 from forman.models import Ticket
 
@@ -19,8 +19,6 @@ from red.linear_projects import (
     brief_of,
     project_from_node,
 )
-
-from fakes import FakeTransport, project
 
 
 def node(name="Rate limiting", status="Planned", **kwargs):

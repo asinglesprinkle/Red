@@ -15,15 +15,17 @@ same rule Forman uses for tickets, one level up.
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from forman.spawn import (
     DEFAULT_MODEL,
-    READ_ONLY_TOOLS as FORMAN_READ_ONLY_TOOLS,
     Activity,
     AgentRun,
     extract_last_json,
     run_conversation,
+)
+from forman.spawn import (
+    READ_ONLY_TOOLS as FORMAN_READ_ONLY_TOOLS,
 )
 from forman.topo import CycleError, topo_sort
 
