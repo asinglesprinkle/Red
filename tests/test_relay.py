@@ -7,13 +7,12 @@ to keep that true.
 
 from __future__ import annotations
 
-from forman.review import Approval, Decision, Question
-from forman.models import Ticket
-
-from red.relay import NOTHING_FOUND, RelayReviewer, draft_answer
-from red.models import ScopeItem
-
 from fakes import ScriptedHuman, agent_run, project
+from forman.models import Ticket
+from forman.review import Approval, Decision, Question
+
+from red.models import ScopeItem
+from red.relay import NOTHING_FOUND, RelayReviewer, draft_answer
 
 ITEM = ScopeItem(2, "Wire it in", "Call the bucket from the middleware.", [1])
 
@@ -168,7 +167,9 @@ def test_feedback_is_carried_through_verbatim():
     human = ScriptedHuman(["  split the auth part out  "])
     reviewer, _calls = relay(human)
 
-    assert reviewer.decide(_approval()) == Decision("feedback", "split the auth part out")
+    assert reviewer.decide(_approval()) == Decision(
+        "feedback", "split the auth part out"
+    )
 
 
 # -- the drafter --------------------------------------------------------------

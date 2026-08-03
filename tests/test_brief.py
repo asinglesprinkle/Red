@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 import pytest
-
+from fakes import ScriptedConversation, brief_json
 from forman.review import Approval, Decision, Question
 
 from red.brief import (
@@ -17,8 +17,6 @@ from red.brief import (
     render_draft,
     to_project,
 )
-
-from fakes import ScriptedConversation, brief_json
 
 
 class Answering:
@@ -58,7 +56,9 @@ def test_prose_becomes_a_project_after_the_agent_stops_asking():
         "Wire it into the middleware",
     ]
     assert project.scope[1].depends_on == [1]
-    assert [q.text for q in reviewer.questions] == ["Which language, and which endpoints?"]
+    assert [q.text for q in reviewer.questions] == [
+        "Which language, and which endpoints?"
+    ]
 
 
 def test_the_agent_is_cut_off_after_three_rounds_and_drafts_anyway():

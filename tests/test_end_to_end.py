@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 
+from fakes import ScriptedConversation, ScriptedHuman, brief_json
 from forman.linear_client import StubLinearClient
 from forman.push import push_interactive
 
@@ -18,8 +19,6 @@ from red.linear_projects import ProjectScopedLinear, StubProjectClient, brief_of
 from red.pipeline import Deps, run_pull
 from red.relay import RelayReviewer
 from red.state import StateStore
-
-from fakes import ScriptedConversation, ScriptedHuman, brief_json
 
 TICKETS = json.dumps(
     {

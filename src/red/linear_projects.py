@@ -180,7 +180,9 @@ class LinearProjects:
 
     def status_id(self, name: str) -> str | None:
         if self._statuses is None:
-            self._statuses = self.client.query(_STATUSES_QUERY)["projectStatuses"]["nodes"]
+            self._statuses = self.client.query(_STATUSES_QUERY)["projectStatuses"][
+                "nodes"
+            ]
         for status in self._statuses:
             if status["name"].strip().lower() == name.strip().lower():
                 return status["id"]
@@ -219,7 +221,9 @@ class LinearProjects:
 
         result = self.client.query(_CREATE_MUTATION, input=payload)["projectCreate"]
         if not result["success"]:
-            raise LinearApiError(f"Linear refused to create the project {project.name!r}")
+            raise LinearApiError(
+                f"Linear refused to create the project {project.name!r}"
+            )
 
         made = project_from_node(result["project"])
         # Keep the scope we drafted rather than the round-tripped copy: the

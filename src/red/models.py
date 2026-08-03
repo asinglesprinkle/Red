@@ -19,7 +19,7 @@ from enum import Enum
 
 def iso_now() -> str:
     """UTC timestamp in ISO 8601, matching Forman's."""
-    return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
+    return _dt.datetime.now(_dt.UTC).isoformat(timespec="seconds")
 
 
 class ItemStatus(str, Enum):

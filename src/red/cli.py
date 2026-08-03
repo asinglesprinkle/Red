@@ -14,24 +14,32 @@ from pathlib import Path
 
 from forman.config import MissingApiKey, load_settings
 from forman.git_ops import GitError, ensure_ignored, repo_root
+from forman.linear_client import StubLinearClient
+from forman.linear_client import stub_path as forman_stub_path
 from forman.linear_graphql import GraphQLLinearClient, LinearApiError
-from forman.linear_client import StubLinearClient, stub_path as forman_stub_path
-from forman.push import Aborted as PushAborted
-from forman.push import PushError, push_interactive
-from forman.review import CREATE, EDIT, FEEDBACK, QUIT, Approval
 
 # The display and the input guard live in Forman because both CLIs need exactly
 # the same ones, for the same reason. `Progress` is re-exported here rather than
 # imported where used, so `red.cli` stays the single name for Red's terminal.
-from forman.progress import (  # noqa: F401
+from forman.progress import (
     Progress,
     ask_after_agent,
     drop_typeahead,
     for_terminal,
     quiet_for_prompt,
 )
+from forman.push import Aborted as PushAborted
+from forman.push import PushError, push_interactive
+from forman.review import CREATE, EDIT, FEEDBACK, QUIT, Approval
 
-from .brief import Aborted, BriefError, draft_project, parse_draft, redraft_project, render_draft
+from .brief import (
+    Aborted,
+    BriefError,
+    draft_project,
+    parse_draft,
+    redraft_project,
+    render_draft,
+)
 from .linear_projects import (
     DRAFT_STATUS,
     READY_STATUS,
@@ -139,7 +147,9 @@ def cmd_push(args: argparse.Namespace) -> int:
         print("What do you want to achieve? (a paragraph is fine)")
         prose = input("> ").strip()
     if not prose or not prose.strip():
-        print("nothing to push: give prose as an argument or on stdin.", file=sys.stderr)
+        print(
+            "nothing to push: give prose as an argument or on stdin.", file=sys.stderr
+        )
         return 2
 
     reviewer = ProjectReviewer(ask=_ask, show=print)
@@ -178,12 +188,12 @@ def cmd_push(args: argparse.Namespace) -> int:
         print(f"push failed: {exc}", file=sys.stderr)
         return 2
 
-    print("")
+    print()
     print(f"created: {made.name}")
     if made.url:
         print(f"         {made.url}")
     print(f"         {len(made.scope)} scope item(s), status {DRAFT_STATUS}")
-    print("")
+    print()
     print(f"Read it in Linear and edit it there. Move it to {READY_STATUS!r} when you")
     print("want `red pull` to start turning it into issues.")
     return 0
@@ -194,9 +204,7 @@ def _approve(
 ) -> Project:
     """Show the draft and do only what you are told to do with it."""
     while True:
-        decision = reviewer.decide(
-            Approval(tickets=[], rendered=render_draft(project))
-        )
+        decision = reviewer.decide(Approval(tickets=[], rendered=render_draft(project)))
 
         if decision.action == CREATE:
             return project
@@ -346,7 +354,7 @@ def _choose(projects, wanted: str | None):
 
 
 def _report(report, project: Project) -> int:
-    print("")
+    print()
     for note in report.notes:
         print(f"note: {note}")
 
@@ -403,7 +411,9 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     push = sub.add_parser("push", help="talk it through and file a Linear project")
-    push.add_argument("prose", nargs="?", help="what you want; read from stdin if absent")
+    push.add_argument(
+        "prose", nargs="?", help="what you want; read from stdin if absent"
+    )
     push.add_argument(
         "--dry-run", action="store_true", help="print the draft and create nothing"
     )
