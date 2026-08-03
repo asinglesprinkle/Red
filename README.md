@@ -45,6 +45,9 @@ you <-> red pull -> forman push -> Linear issues, in that project
         [then, unchanged: forman pull -> a pull request]
 ```
 
+Red's job ends when the tickets exist: execution is Forman's, and you run
+`forman pull` yourself, when you are ready.
+
 ## Install
 
 Needs Python 3.11+, git, and the [Claude Code CLI](https://claude.com/claude-code)
@@ -248,8 +251,7 @@ mileage.
   when you would rather just answer.
 - It does not drive `forman pull`. Forman's execution phase has no human seam
   by design: blockers surface asynchronously in `state.json`, `manifest.md` and
-  Linear comments, and `forman resume` is you saying you have dealt with one. Run
-  `forman pull` yourself.
+  Linear comments, and `forman resume` is you saying you have dealt with one.
 - Forman is pinned to a commit in `pyproject.toml`. It exports nothing from
   `__init__` and promises no API stability, so an unpinned dependency would be a
   dependency on whatever happened to be pushed. Bumping it is a deliberate act.
