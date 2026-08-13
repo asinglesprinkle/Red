@@ -7,6 +7,9 @@ to keep that true.
 
 from __future__ import annotations
 
+import asyncio
+import threading
+
 from fakes import ScriptedHuman, agent_run, project
 from forman.models import Ticket
 from forman.review import Approval, Decision, Question
@@ -218,6 +221,59 @@ def test_the_drafter_is_read_only():
     assert "Write" not in seen["allowed_tools"]
     assert "Edit" not in seen["allowed_tools"]
     assert "Bash" not in seen["allowed_tools"]
+
+
+def test_drafting_works_inside_formans_event_loop():
+    """The real call site is a callback inside `asyncio.run`, not a bare thread.
+
+    Forman's `run_agent` ends in `asyncio.run`, and Red reaches it from the
+    `respond` callback of Forman's push conversation, which is already inside
+    one. Calling it there used to raise and degrade every proposal to a
+    non-answer, so the drafter has to be exercised from inside a loop.
+    """
+    threads: list[int] = []
+
+    def runner(**_kwargs):
+        threads.append(threading.get_ident())
+        # Exactly what forman.spawn.run_agent does at the end.
+        return asyncio.run(_answer())
+
+    async def _answer():
+        return agent_run("Per API key, 100 a minute.")
+
+    async def _inside_a_loop() -> str:
+        return draft_answer(brief="b", item=ITEM, question="q", runner=runner)
+
+    answer = asyncio.run(_inside_a_loop())
+
+    assert answer == "Per API key, 100 a minute."
+    # It ran somewhere else, which is the only reason the nested loop is legal.
+    assert threads and threads[0] != threading.get_ident()
+
+
+def test_drafting_stays_on_this_thread_when_there_is_no_loop():
+    threads: list[int] = []
+
+    def runner(**_kwargs):
+        threads.append(threading.get_ident())
+        return agent_run("answer")
+
+    assert draft_answer(brief="b", item=ITEM, question="q", runner=runner) == "answer"
+    assert threads == [threading.get_ident()]
+
+
+def test_a_drafter_failure_inside_a_loop_still_costs_only_a_keystroke():
+    def explode(**_kwargs):
+        raise RuntimeError("no model today")
+
+    async def _inside_a_loop() -> str:
+        return draft_answer(brief="b", item=ITEM, question="q", runner=explode)
+
+    answer = asyncio.run(_inside_a_loop())
+
+    # Raised on the worker, re-raised here, and caught by the same guard as ever.
+    assert answer.startswith(NOTHING_FOUND)
+    assert "no model today" in answer
 
 
 def test_the_drafter_is_told_to_say_so_rather_than_guess():

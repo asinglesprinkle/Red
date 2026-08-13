@@ -21,6 +21,8 @@ The asymmetry is deliberate and load bearing:
 
 from __future__ import annotations
 
+import asyncio
+import threading
 from collections.abc import Callable
 
 from forman.review import Approval, Decision, Question, parse_decision
@@ -55,6 +57,43 @@ short paragraph, addressed to whoever asked. No preamble.\
 """
 
 
+def _off_loop(runner: Callable[..., object], /, **kwargs: object) -> object:
+    """Call a runner that wants an event loop of its own, from a thread without one.
+
+    Forman's `run_agent` ends in `asyncio.run`. Red calls it from inside the
+    `respond` callback of Forman's push conversation, which is itself being
+    driven by `asyncio.run`, and nesting those raises rather than waiting. So
+    when this thread already has a loop, the call goes to a thread that has
+    none. Nothing is lost by blocking: the person is sitting at a prompt waiting
+    for this one answer, and the conversation cannot proceed without it.
+
+    The worker is a daemon and is joined rather than shut down through a pool,
+    so a ctrl-c while drafting leaves immediately instead of waiting on a
+    session nobody wants any more.
+    """
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return runner(**kwargs)
+
+    box: dict[str, object] = {}
+
+    def _target() -> None:
+        try:
+            box["value"] = runner(**kwargs)
+        except BaseException as exc:  # noqa: BLE001 - re-raised on the caller's thread
+            box["error"] = exc
+
+    thread = threading.Thread(target=_target, daemon=True, name="red-drafter")
+    thread.start()
+    thread.join()
+
+    error = box.get("error")
+    if error is not None:
+        raise error  # type: ignore[misc]
+    return box.get("value")
+
+
 def _prompt(brief: str, item: ScopeItem, question: str) -> str:
     return (
         f"# Project brief\n\n{brief}\n\n"
@@ -80,7 +119,8 @@ def draft_answer(
     should cost them a keystroke and not the run.
     """
     try:
-        run = runner(
+        run = _off_loop(
+            runner,
             prompt=_prompt(brief, item, question),
             system_prompt=ANSWER_CONTRACT.format(nothing_found=NOTHING_FOUND),
             cwd=cwd,
@@ -91,8 +131,9 @@ def draft_answer(
     except Exception as exc:  # noqa: BLE001 - any failure degrades to no proposal
         return f"{NOTHING_FOUND} (drafting failed: {exc})"
 
-    if getattr(run, "error", None):
-        return f"{NOTHING_FOUND} (drafting failed: {run.error})"
+    failure = getattr(run, "error", None)
+    if failure:
+        return f"{NOTHING_FOUND} (drafting failed: {failure})"
     return (getattr(run, "text", "") or "").strip() or NOTHING_FOUND
 
 
