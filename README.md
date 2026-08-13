@@ -8,7 +8,7 @@ approved, then let Forman turn it into tickets.
 ---
 
 Red is a local, single-user tool that sits one level above
-[Forman](https://github.com/cmichaelsd/Forman). Forman closes the loop between
+[Forman](https://github.com/asinglesprinkle/Forman). Forman closes the loop between
 a ticket and a pull request; Red closes the one between an idea and the tickets.
 You describe what you want in plain language; it drafts a Linear project. You
 review that project in Linear and move it on. Later Red walks it a slice at a
@@ -55,7 +55,7 @@ on your PATH. Forman is pulled in as a dependency; you do not need to install it
 separately.
 
 ```sh
-git clone https://github.com/cmichaelsd/Red && cd Red
+git clone https://github.com/asinglesprinkle/Red && cd Red
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
 ```
@@ -198,7 +198,7 @@ or asking for it by hand.
 None of its own. Red calls Forman's settings loader, so the same environment
 variables, the same `.env` in the target repo, and the same
 `~/.config/forman/.env` apply, with the same precedence. See
-[Forman's configuration table](https://github.com/cmichaelsd/Forman#configuration).
+[Forman's configuration table](https://github.com/asinglesprinkle/Forman#configuration).
 
 Red keeps its bookkeeping in `.red/` inside the target repo and adds that to
 `.git/info/exclude`, so it cannot be committed by accident. This is tooling's
