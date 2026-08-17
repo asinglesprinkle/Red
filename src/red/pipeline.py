@@ -50,6 +50,7 @@ class PushPort(Protocol):
         edit: Callable[[str], str] | None,
         cwd: str,
         on_activity: Callable[[Any], None] | None = ...,
+        warn: Callable[[str], None] | None = ...,
     ) -> list[Any]: ...
 
 
@@ -184,6 +185,11 @@ def run_pull(deps: Deps, project: Project) -> PullReport:
                 edit=deps.edit,
                 cwd=deps.cwd,
                 on_activity=deps.on_activity,
+                # A slice that could not record what it depends on is worth
+                # reading about while the run is still in front of you: the
+                # tickets look right, and only `forman pull` finds out later
+                # that it does not know what order to work them in.
+                warn=lambda message: deps.note(f"warning: {message}"),
             )
         except Aborted:
             record.status = ItemStatus.SKIPPED.value

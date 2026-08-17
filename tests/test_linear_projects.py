@@ -290,6 +290,9 @@ class RecordingInner:
     def set_status(self, identifier, status):
         self.calls.append(f"status:{identifier}")
 
+    def relate_blocks(self, blocker, blocked):
+        self.calls.append(f"blocks:{blocker}>{blocked}")
+
 
 class RecordingProjects:
     def __init__(self) -> None:
@@ -332,6 +335,17 @@ def test_everything_else_is_passed_straight_through():
     scoped.list_assigned()
 
     assert inner.calls == ["comment:ENG-1", "status:ENG-1"]
+
+
+def test_ordering_between_slices_reaches_the_backend():
+    """Red files one slice per push, so every edge between slices crosses this
+    decorator. Not delegating it puts a whole project on the board unordered."""
+    inner, projects = RecordingInner(), RecordingProjects()
+    scoped = ProjectScopedLinear(inner, projects, project())
+
+    scoped.relate_blocks("ENG-1", "ENG-2")
+
+    assert inner.calls == ["blocks:ENG-1>ENG-2"]
 
 
 def test_the_attach_mutation_is_an_issue_update_with_a_project_id():

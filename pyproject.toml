@@ -7,7 +7,15 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
   "claude-agent-sdk>=0.1.0",
-  # Forman master as of the provenance label: `forman pull` now only selects
+  # Forman master as of cross-push ordering: blocked_by and blocks may now name
+  # a ticket that already exists, not only an index into the batch being
+  # drafted, and both directions are recorded. Red depends on this more than on
+  # anything else here - it files one slice per push_interactive call, so every
+  # dependency between slices points at tickets an earlier call created. Until
+  # this, that reference was dropped without a word and a whole project landed
+  # on the board with no ordering on it, leaving `forman pull` to choose by
+  # priority and identifier alone and start the third slice first.
+  # Before that, the provenance label: `forman pull` now only selects
   # tickets carrying Forman's own label, so everything a client creates has to
   # be stamped with it. Red depends on this directly - build_clients passes
   # settings.label, and without it every project Red files would be invisible
@@ -35,7 +43,7 @@ dependencies = [
   # master: nothing in Forman is exported from __init__ and it makes no
   # stability promise, so tracking a branch would make Red depend on whatever
   # happened to be pushed. Bump this deliberately.
-  "forman @ git+https://github.com/asinglesprinkle/Forman@dc2139ac6f1ff0b4685ca2122fd3c0f604cb0bd9",
+  "forman @ git+https://github.com/asinglesprinkle/Forman@e431e08570eaa6dcd6e76cbec5e6d258c66fddad",
 ]
 
 [project.optional-dependencies]

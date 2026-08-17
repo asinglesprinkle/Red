@@ -279,6 +279,12 @@ class ProjectScopedLinear:
     def set_status(self, identifier: str, status: str) -> None:
         self.inner.set_status(identifier, status)
 
+    def relate_blocks(self, blocker: str, blocked: str) -> None:
+        # Red files one slice per push, so every edge between slices names a
+        # ticket from an earlier one. Dropping this delegation would put the
+        # whole project on the board with no ordering on it at all.
+        self.inner.relate_blocks(blocker, blocked)
+
     # -- the one that differs ------------------------------------------------
 
     def create(self, ticket):
