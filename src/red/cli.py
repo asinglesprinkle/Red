@@ -115,20 +115,28 @@ def _confirm(question: str) -> bool:
 
 
 def build_clients(repo: str, backend: str):
-    """Return (projects, linear, team_key). One place decides real or stub."""
+    """Return (projects, linear, team_key). One place decides real or stub.
+
+    The label is not optional here. Forman only pulls tickets carrying its
+    provenance mark, so a Red project filed without one is a project Forman
+    will never work: the whole point of Red is the handoff, and an unstamped
+    ticket breaks it silently at the far end, days later.
+    """
+    settings = load_settings(repo)
     if backend == "stub":
         return (
             StubProjectClient(path=stub_path(repo)),
-            StubLinearClient(path=forman_stub_path(repo)),
+            StubLinearClient(path=forman_stub_path(repo), label=settings.label),
             "TEAM",
         )
-    settings = load_settings(repo)
     settings.require_api_key()
     linear = GraphQLLinearClient(
         api_key=settings.api_key,
         team_key=settings.team_key,
         review_state=settings.review_state,
+        progress_state=settings.progress_state,
         user=settings.user,
+        label=settings.label,
     )
     team_key = settings.team_key or linear.default_team_key()
     return LinearProjects(linear), linear, team_key

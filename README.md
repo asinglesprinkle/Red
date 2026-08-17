@@ -48,6 +48,11 @@ you <-> red pull -> forman push -> Linear issues, in that project
 Red's job ends when the tickets exist: execution is Forman's, and you run
 `forman pull` yourself, when you are ready.
 
+Everything Red files carries Forman's provenance label, which is what `forman
+pull` requires before it will start a ticket on its own. That is the handoff
+working as intended: a project you approved through Red is work Forman will
+pick up, and twenty tickets someone else filed on you in the meantime are not.
+
 ## Install
 
 Needs Python 3.11+, git, and the [Claude Code CLI](https://claude.com/claude-code)

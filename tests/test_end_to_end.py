@@ -168,6 +168,57 @@ def test_the_words_the_human_typed_are_the_words_forman_received(tmp_path):
     assert "Which endpoints?" in human.shown
 
 
+def test_what_red_files_is_what_forman_will_pull(tmp_path):
+    """The far end of the handoff.
+
+    Forman only selects tickets carrying its own label, so an unstamped ticket
+    is one Forman will never work. That failure is silent and arrives days
+    later, at `forman pull`, with nothing on the board to explain it. The
+    project scoping sits between Red and Forman's create, so this checks the
+    mark survives that wrapper rather than trusting that it delegates.
+    """
+    from forman.config import DEFAULT_LABEL
+    from forman.orchestrator import select_ticket
+
+    projects = StubProjectClient(path=tmp_path / "projects.json")
+    linear = StubLinearClient(path=tmp_path / "issues.json", label=DEFAULT_LABEL)
+    project = _project(tmp_path, projects)
+    project.status = "Planned"
+
+    human = ScriptedHuman(["", "c", "", "c"])
+
+    def reviewer_for(*, item, position):
+        return RelayReviewer(
+            ask=human.ask,
+            show=human.show,
+            project=project,
+            brief=brief_of(project),
+            item=item,
+            position=position,
+            drafter=lambda **_kw: "Everything in src/api.",
+        )
+
+    report = run_pull(
+        Deps(
+            projects=projects,
+            linear=scoped_for(linear, projects, project),
+            store=StateStore(tmp_path),
+            push=_pushing_once(),
+            reviewer_for=reviewer_for,
+            confirm=lambda _q: True,
+            note=lambda _t: None,
+        ),
+        project,
+    )
+
+    assert report.outcome == "filed"
+    assert all(t.has_label(DEFAULT_LABEL) for t in linear.tickets.values())
+    # Not just labelled: actually selectable by the phase that reads it back.
+    picked = select_ticket(linear.list_assigned(), label=DEFAULT_LABEL)
+    assert picked is not None
+    assert picked.identifier in report.issues
+
+
 def test_quitting_at_the_gate_files_nothing_anywhere(tmp_path):
     projects = StubProjectClient(path=tmp_path / "projects.json")
     linear = StubLinearClient(path=tmp_path / "issues.json")

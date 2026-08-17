@@ -7,7 +7,12 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
   "claude-agent-sdk>=0.1.0",
-  # Forman master as of the resumed clock: forman.progress puts the live line
+  # Forman master as of the provenance label: `forman pull` now only selects
+  # tickets carrying Forman's own label, so everything a client creates has to
+  # be stamped with it. Red depends on this directly - build_clients passes
+  # settings.label, and without it every project Red files would be invisible
+  # to the pull phase, which is the entire point of the handoff.
+  # Before that, the resumed clock: forman.progress puts the live line
   # back when the answer is submitted rather than when the agent next does
   # something. Red is where that gap hurt most - the relay hands every one of
   # Forman's questions to a person, so every answer they typed was followed by
@@ -30,7 +35,7 @@ dependencies = [
   # master: nothing in Forman is exported from __init__ and it makes no
   # stability promise, so tracking a branch would make Red depend on whatever
   # happened to be pushed. Bump this deliberately.
-  "forman @ git+https://github.com/asinglesprinkle/Forman@8435740137d48cba10178d59cb16d18051180d7c",
+  "forman @ git+https://github.com/asinglesprinkle/Forman@dc2139ac6f1ff0b4685ca2122fd3c0f604cb0bd9",
 ]
 
 [project.optional-dependencies]
