@@ -201,6 +201,24 @@ def test_an_agent_error_becomes_a_non_answer_rather_than_a_guess():
     assert "session died" in answer
 
 
+def test_a_draft_that_ran_out_of_turns_says_so_in_words():
+    # What the SDK hands back is the wording of the CLI's deliberate non-zero
+    # exit. A person waiting at a prompt is told the lookup was too short.
+    raised = (
+        "Exception: Claude Code returned an error result: "
+        "Reached maximum number of turns (8)"
+    )
+    answer = draft_answer(
+        brief="b",
+        item=ITEM,
+        question="q",
+        runner=lambda **_k: agent_run("", error=raised),
+    )
+    assert answer.startswith(NOTHING_FOUND)
+    assert "ran out of its 8 turns" in answer
+    assert "Exception" not in answer
+
+
 def test_an_empty_reply_is_a_non_answer():
     answer = draft_answer(
         brief="b", item=ITEM, question="q", runner=lambda **_k: agent_run("   ")

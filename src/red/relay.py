@@ -26,7 +26,12 @@ import threading
 from collections.abc import Callable
 
 from forman.review import Approval, Decision, Question, parse_decision
-from forman.spawn import DEFAULT_MODEL, READ_ONLY_TOOLS, run_agent
+from forman.spawn import (
+    DEFAULT_MODEL,
+    READ_ONLY_TOOLS,
+    names_turn_limit,
+    run_agent,
+)
 
 from .models import Project, ScopeItem
 
@@ -132,6 +137,12 @@ def draft_answer(
         return f"{NOTHING_FOUND} (drafting failed: {exc})"
 
     failure = getattr(run, "error", None)
+    if failure and names_turn_limit(failure):
+        # The CLI reports a turn limit by exiting non-zero, and what reaches
+        # here is the SDK exception that exit raised. A person waiting at a
+        # prompt for one drafted sentence should be told the lookup was too
+        # short, not handed the wording of a subprocess exit.
+        failure = f"the draft ran out of its {DRAFT_MAX_TURNS} turns"
     if failure:
         return f"{NOTHING_FOUND} (drafting failed: {failure})"
     return (getattr(run, "text", "") or "").strip() or NOTHING_FOUND
